@@ -1,0 +1,30 @@
+{
+  "study": "monolingual_split_24_8_reg005",
+  "description": "Balanced English split-latent VAE seed sweep.",
+  "data": "tractatus_structure_latents/data/tractatus.json",
+  "languages": ["en"],
+  "model": {
+    "split_latent": true,
+    "text_latent_dim": 24,
+    "structure_latent_dim": 8
+  },
+  "training": {
+    "epochs": 80,
+    "batch_size": 32,
+    "beta": 0.01,
+    "beta_text": 0.01,
+    "beta_structure": 0.05,
+    "lambda_parent": 0.2,
+    "lambda_depth": 0.1,
+    "lambda_next": 0.2,
+    "lambda_child": 0.02,
+    "lr": 0.001
+  },
+  "paths": {
+    "checkpoints": "checkpoints",
+    "metrics": "metrics",
+    "latents": "latents",
+    "logs": "logs",
+    "summaries": "summaries"
+  }
+}

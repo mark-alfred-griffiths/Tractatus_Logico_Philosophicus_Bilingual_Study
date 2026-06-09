@@ -1,0 +1,38 @@
+{
+  "loss": 1.6959968174205107,
+  "reconstruction_loss": 1.2242668306126314,
+  "kl": 9.860527206869687,
+  "kl_text": 0.5324092069092918,
+  "kl_structure": 9.328117819393382,
+  "perplexity": 3.4016714096069336,
+  "parent_accuracy": 0.785171102661597,
+  "depth_accuracy": 0.9372623574144486,
+  "next_accuracy": 0.5541825095057035,
+  "reconstruction_loss_by_language": {
+    "de": 1.1438244217475557,
+    "en": 1.3032630390767361
+  },
+  "parent_accuracy_by_language": {
+    "de": 0.785171102661597,
+    "en": 0.785171102661597
+  },
+  "depth_accuracy_by_language": {
+    "de": 0.9334600760456274,
+    "en": 0.94106463878327
+  },
+  "next_accuracy_by_language": {
+    "de": 0.5532319391634981,
+    "en": 0.5551330798479087
+  },
+  "mean_parent_child_distance": 5.848090130584548,
+  "mean_sibling_distance": 2.0569720237931133,
+  "mean_unrelated_distance": 5.540197986500345,
+  "mean_same_id_cross_language_distance": 0.9491435528481414,
+  "cross_language_top1_id_accuracy": 0.8783269961977186,
+  "cross_language_mrr": 0.9160448093251915,
+  "mean_cross_language_parent_child_distance": 5.852286336164713,
+  "cross_language_top1_id_accuracy_de_to_en": 0.876425855513308,
+  "cross_language_top1_id_accuracy_en_to_de": 0.8802281368821293,
+  "cross_language_mrr_de_to_en": 0.9145341141260794,
+  "cross_language_mrr_en_to_de": 0.9175555045243035
+}

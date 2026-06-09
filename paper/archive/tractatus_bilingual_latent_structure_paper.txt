@@ -1,0 +1,627 @@
+Bilingual Structure Latents in the Tractatus: Aligning German and English
+Propositions with Shared Logical Supervision
+
+Author: Mark Alfred Griffiths
+Project: Tractatus Latent Logic
+
+
+ABSTRACT
+
+This paper describes a bilingual extension of the split-latent variational
+autoencoder experiment on Wittgenstein's Tractatus Logico-Philosophicus. The
+original experiment asked whether the hierarchical numbering system of the
+Tractatus could be used as weak supervision for learning a compact latent
+representation of formal structure. The bilingual experiment asks a narrower
+follow-up question: when German and English proposition texts are reconstructed
+as separate language-conditioned realizations, but share the same hierarchy
+supervision, does the structure latent align the two languages by proposition
+identity?
+
+The dataset contains 526 numbered propositions. Each proposition has an English
+text and a German text, giving 1052 flattened language-specific training and
+evaluation samples. The model uses a split latent space: a 24-dimensional text
+latent for reconstruction and an 8-dimensional structure latent for hierarchy
+prediction. In bilingual runs, the decoder is conditioned on language, while the
+structural targets are shared across German and English by proposition id.
+
+The strongest supported result is that the bilingual model learns
+proposition-level structure latents that align German and English realizations
+under shared Tractatus hierarchy supervision. Even with no explicit bilingual
+alignment loss, cross-language retrieval is already strong: top-1 proposition
+retrieval is 0.9211 and mean reciprocal rank is 0.9575. With moderate alignment
+regularization at lambda_language_alignment = 0.10, retrieval improves to top-1
+0.9363 and MRR 0.9621. The best hierarchy scores occur at
+lambda_language_alignment = 0.03. High alignment at 1.00 degrades both hierarchy
+prediction and retrieval.
+
+The result does not show that the model understands Wittgenstein, and it does
+not establish general language-invariant logic. It shows something more limited
+and more concrete: under aligned German and English proposition texts, and under
+shared Tractatus hierarchy supervision, the learned structure latent tracks
+formal proposition position across languages.
+
+
+1. INTRODUCTION
+
+The Tractatus Logico-Philosophicus is a useful test case because its formal
+layout is unusually explicit. The propositions are not simply placed one after
+another. They are numbered hierarchically. Proposition 4.12 is related to
+4.121, 4.1211, and 4.1212. Proposition 5 is related to propositions beginning
+with 5.1, 5.2, and so on. The numbering system gives a formal scaffold: parent
+relations, depth, siblings, descendants, and textual successor relations.
+
+The original split-latent experiment used the English text of each proposition
+and the hierarchy implied by the numbering system. It showed that a model could
+learn an 8-dimensional structure latent that carried useful information about
+formal position. But that left an important question unresolved. Was the
+structure latent genuinely tracking formal position, or was it merely exploiting
+English lexical regularities that happened to correlate with proposition number
+and section?
+
+The bilingual experiment addresses that question by adding the German text of
+the same propositions. Each proposition now has two textual realizations. The
+English and German strings differ lexically and syntactically, but they share a
+proposition id and therefore share structural targets. The model is required to
+reconstruct the text in the appropriate language, while the structure latent is
+trained to predict the same hierarchy-derived targets for both realizations.
+
+This creates a simple operational test. If the structure latent is only an
+English lexical embedding, then German and English versions of the same
+proposition should not necessarily appear near one another in structure space.
+If, however, the structure latent is carrying proposition-level formal position,
+then the German and English realizations of the same proposition should align.
+
+The central claim of this paper is therefore deliberately modest:
+
+    The bilingual model learns proposition-level structure latents that align
+    German and English realizations under shared Tractatus hierarchy
+    supervision.
+
+This should not be inflated into a claim about general language-invariant logic.
+The dataset is aligned by proposition id. The supervision comes from the
+Tractatus numbering system. The evaluation is in-sample on this structured
+corpus. The result is evidence for formal-position tracking in this setting, not
+for general philosophical understanding.
+
+
+2. RELATION TO THE MONOLINGUAL SPLIT-LATENT RESULT
+
+The monolingual paper introduced the main modelling idea. A single latent vector
+is a poor interpretive object when it is asked to do everything at once. It must
+support text reconstruction, but it is also asked to predict hierarchy. These
+objectives can interfere. A latent vector useful for reconstructing words need
+not be the same vector that best represents formal position in the Tractatus
+numbering tree.
+
+The retained architecture therefore splits the latent vector into two parts:
+
+    z_text:       24 dimensions
+    z_structure:  8 dimensions
+
+The text latent is used by the decoder. The structure latent is used by
+hierarchy-prediction heads. In the retained split model, the decoder does not
+receive z_structure. This prevents the structure subspace from becoming an
+unrestricted reconstruction channel.
+
+The bilingual experiment keeps this separation but changes the data and the
+reconstruction problem. Instead of one English row per proposition, the dataset
+contains one row per proposition with two text fields:
+
+    texts.en: English proposition text
+    texts.de: German proposition text
+
+The training loader flattens these rows into language-specific samples. For
+example, proposition 4.121 produces one English sample and one German sample.
+Both samples have different text, but both share the same proposition id,
+parent_id, depth, next_id, children, siblings, ancestor_chain, and child_count.
+
+The bilingual experiment is therefore a direct companion to the monolingual
+paper. It tests whether the structure subspace remains meaningful when the
+model sees two language realizations of the same formal proposition.
+
+
+3. BILINGUAL DATASET
+
+The bilingual dataset is stored at:
+
+    tractatus_latent_logic/data/tractatus_bilingual.json
+
+It is built from the Project Gutenberg Tractatus source. The parser extracts
+English propositions from \PropositionE entries and German propositions from
+\PropositionG entries. The resulting dataset has one structural row per
+numbered proposition. Each row contains proposition-level metadata and a texts
+object containing the two language realizations.
+
+A simplified row has this form:
+
+    id: "4.121"
+    parent_id: "4.12"
+    depth: 4
+    texts.en: "Propositions cannot represent the logical form..."
+    texts.de: "Die Saetze koennen die logische Form nicht darstellen..."
+    next_id: "4.1211"
+    children: ["4.1211", "4.1212"]
+    siblings: ["4.122", "4.123"]
+    ancestor_chain: ["4", "4.1", "4.12"]
+    child_count: 2
+
+Dataset statistics:
+
+    proposition rows:          526
+    flattened text samples:    1052
+    languages:                 de, en
+    first proposition:          1
+    last proposition:           7
+
+Depth distribution:
+
+    depth 1:   7
+    depth 2:   25
+    depth 3:   124
+    depth 4:   245
+    depth 5:   118
+    depth 6:   7
+
+Top-level section distribution:
+
+    section 1:   7
+    section 2:   79
+    section 3:   74
+    section 4:   109
+    section 5:   151
+    section 6:   105
+    section 7:   1
+
+The schema matters. The model does not receive an unstructured bilingual text
+corpus. It receives aligned proposition rows. The German and English texts are
+different surface realizations, but the proposition id and the hierarchy targets
+are shared. This makes the experiment a test of proposition-level structural
+alignment, not a test of unsupervised translation.
+
+
+4. MODEL AND TRAINING OBJECTIVE
+
+The bilingual model is a split-latent recurrent VAE. The encoder reads the text
+of one proposition in one language. It outputs a latent distribution, from which
+the model samples a latent vector. That latent vector is split into z_text and
+z_structure.
+
+The high-level flow is:
+
+    proposition text
+      -> encoder
+      -> z_text and z_structure
+      -> language-conditioned decoder from z_text
+      -> reconstructed proposition text
+
+The structure latent is passed to auxiliary hierarchy heads:
+
+    parent_head(z_structure)
+    depth_head(z_structure)
+    next_head(z_structure)
+    child_count_head(z_structure)
+
+The bilingual addition is language conditioning. The decoder receives a learned
+language embedding, so it knows whether it is reconstructing German or English.
+This is important because German and English reconstruction require different
+lexical and syntactic information. The model should not be forced to collapse
+all language-specific information into a single shared text representation.
+
+The retained bilingual architecture uses:
+
+    z_text:       24 dimensions
+    z_structure:  8 dimensions
+    total latent: 32 dimensions
+
+The loss combines reconstruction, KL regularization, hierarchy prediction, and
+an optional same-proposition cross-language alignment term:
+
+    L = reconstruction_loss
+      + beta_text * KL(z_text)
+      + beta_structure * KL(z_structure)
+      + lambda_parent * parent_loss
+      + lambda_depth * depth_loss
+      + lambda_next * next_loss
+      + lambda_child * child_count_loss
+      + lambda_language_alignment * alignment_loss
+
+The alignment term is applied to z_structure for same-id German and English
+samples:
+
+    L_align = mse(z_structure_en(id), z_structure_de(id))
+
+The sweep varies lambda_language_alignment while holding the rest of the
+training setup fixed:
+
+    z_text:          24
+    z_structure:      8
+    epochs:          80
+    batch_size:      32
+    beta_text:     0.01
+    beta_structure: 0.05
+    lambda_parent: 0.2
+    lambda_depth:  0.1
+    lambda_next:   0.2
+    lambda_child:  0.02
+
+The tested alignment values are:
+
+    lambda_language_alignment = 0.00, 0.03, 0.10, 0.30, 1.00
+
+
+5. EVALUATION METRICS
+
+The evaluation uses both hierarchy metrics and bilingual alignment metrics.
+
+Hierarchy metrics measure whether z_structure supports prediction of the formal
+relations derived from the numbering system:
+
+    parent accuracy: predicted parent proposition
+    depth accuracy:  predicted hierarchy depth
+    next accuracy:   predicted next proposition in textual order
+
+Bilingual retrieval metrics measure whether German and English realizations of
+the same proposition are close in z_structure. For each German structure latent,
+the evaluator retrieves the nearest English structure latent and checks whether
+it has the same proposition id. The same is done in the English-to-German
+direction. The combined metrics are:
+
+    cross_language_top1_id_accuracy
+    cross_language_mrr
+    mean_same_id_cross_language_distance
+
+The top-1 metric is the clearest operational test. It asks whether the nearest
+opposite-language structure latent is the matching proposition. MRR is less
+strict but captures whether the matching proposition is ranked near the top even
+when it is not first.
+
+The evaluation also reports reconstruction loss and perplexity. These are not
+the main target of the paper, but they are useful for detecting whether an
+alignment setting damages the model's ability to reconstruct text.
+
+
+6. ALIGNMENT SWEEP RESULTS
+
+The alignment sweep is the central experiment. The table below reports the
+five tested values of lambda_language_alignment.
+
+    lambda  parent  depth   next    top1    mrr     same_id_dist  recon   ppl
+    0.00    0.8603  0.9620  0.6008  0.9211  0.9575  0.7772        1.2039  3.3330
+    0.03    0.8774  0.9677  0.6103  0.9135  0.9531  0.7629        1.2243  3.4017
+    0.10    0.8470  0.8774  0.5979  0.9363  0.9621  0.7412        1.2016  3.3254
+    0.30    0.8108  0.9430  0.5428  0.8555  0.9019  0.9788        1.1883  3.2815
+    1.00    0.5494  0.7196  0.3707  0.7890  0.8561  1.1670        1.2944  3.6488
+
+[INSERT GRAPHIC: bilingual_alignment_retrieval_sweep.png]
+Source artifact: paper/figures/bilingual_alignment_retrieval_sweep.png
+Suggested caption: Cross-language proposition retrieval as a function of
+language-alignment weight. Moderate alignment at 0.10 gives the best top-1 and
+MRR, while high alignment degrades retrieval.
+
+[INSERT GRAPHIC: bilingual_structure_accuracy_sweep.png]
+Source artifact: paper/figures/bilingual_structure_accuracy_sweep.png
+Suggested caption: Parent, depth, and next-proposition prediction accuracy
+across alignment strengths. The best hierarchy scores occur at light alignment,
+not at maximum alignment.
+
+[INSERT GRAPHIC: bilingual_retrieval_structure_tradeoff.png]
+Source artifact: paper/figures/bilingual_retrieval_structure_tradeoff.png
+Suggested caption: Retrieval accuracy and structural accuracy do not improve
+monotonically together. The sweep shows a tradeoff between cross-language
+alignment and preservation of hierarchy distinctions.
+
+[INSERT GRAPHIC: bilingual_reconstruction_sweep.png]
+Source artifact: paper/figures/bilingual_reconstruction_sweep.png
+Suggested caption: Reconstruction loss and perplexity across alignment
+strengths. Reconstruction alone is not sufficient for selecting the best
+structure model.
+
+Several points matter.
+
+First, the no-alignment baseline is already strong. With
+lambda_language_alignment = 0.00, cross-language top-1 proposition retrieval is
+0.9211 and MRR is 0.9575. This means that shared hierarchy supervision alone is
+sufficient to induce substantial bilingual alignment in z_structure.
+
+Second, explicit alignment helps only in moderation. The best bilingual
+retrieval is obtained at lambda_language_alignment = 0.10:
+
+    cross_language_top1_id_accuracy: 0.9363
+    cross_language_mrr:              0.9621
+
+Third, the best hierarchy scores occur at lambda_language_alignment = 0.03:
+
+    parent_accuracy: 0.8774
+    depth_accuracy:  0.9677
+    next_accuracy:   0.6103
+
+Fourth, high alignment damages the model. At lambda_language_alignment = 1.00,
+performance falls to:
+
+    parent_accuracy: 0.5494
+    depth_accuracy:  0.7196
+    next_accuracy:   0.3707
+    top1 retrieval:  0.7890
+    MRR:             0.8561
+
+The result is therefore not that more alignment is always better. The better
+interpretation is that z_structure needs enough cross-language pressure to bring
+same-id propositions together, but not so much pressure that it loses the
+fine-grained distinctions needed for hierarchy prediction.
+
+Directional retrieval gives the same picture:
+
+    lambda  de->en top1  en->de top1  de->en MRR  en->de MRR
+    0.00    0.9259       0.9163       0.9604      0.9547
+    0.03    0.9202       0.9068       0.9561      0.9501
+    0.10    0.9411       0.9316       0.9640      0.9603
+    0.30    0.8460       0.8650       0.8953      0.9085
+    1.00    0.7871       0.7909       0.8569      0.8553
+
+The effect is balanced. At the best retrieval setting, German-to-English top-1
+is 0.9411 and English-to-German top-1 is 0.9316. The model is not merely mapping
+one language into the other in a one-sided way.
+
+By-language structure metrics are also similar across German and English:
+
+    lambda  parent_de parent_en depth_de depth_en next_de next_en
+    0.00    0.8593    0.8612    0.9601   0.9639   0.5856  0.6160
+    0.03    0.8783    0.8764    0.9620   0.9734   0.6103  0.6103
+    0.10    0.8479    0.8460    0.8821   0.8726   0.5951  0.6008
+    0.30    0.8099    0.8118    0.9411   0.9449   0.5342  0.5513
+    1.00    0.5570    0.5418    0.7224   0.7167   0.3764  0.3650
+
+This supports the view that the structure latent is not only an English-side
+artifact. Both languages support broadly similar hierarchy prediction.
+
+
+7. LATENT VISUALIZATION
+
+The exported align010 structure latents contain 1052 vectors: one for each
+language-specific proposition sample. Each vector has 8 dimensions. A PCA
+projection gives a simple visual check on the organization of this space.
+
+[INSERT GRAPHIC: bilingual_latent_pca_language_align010_seed000.png]
+Source artifact: paper/figures/bilingual_latent_pca_language_align010_seed000.png
+Suggested caption: PCA projection of the lambda=0.10 structure latents, coloured
+by language. German and English samples occupy the same broad structure space
+rather than separating into two isolated language clusters.
+
+[INSERT GRAPHIC: bilingual_latent_pca_depth_align010_seed000.png]
+Source artifact: paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+Suggested caption: PCA projection of the same structure latents, coloured by
+Tractatus hierarchy depth. The plot is a visual diagnostic of structural
+organization, not a proof of semantic understanding.
+
+The language-coloured plot is useful because it checks a failure mode. If the
+structure latent were dominated by language identity, one would expect German
+and English samples to separate strongly. Instead, the retrieval metrics show
+that same-id German and English latents are usually near one another in the
+structure space.
+
+The depth-coloured plot is useful for a different reason. It checks whether the
+same latent space still carries formal hierarchy information. The sweep results
+show that alignment can improve retrieval while also weakening some hierarchy
+metrics. Visualization should therefore be read alongside the quantitative
+scores, not in place of them.
+
+
+8. PROPOSITION TRACKING AND FORMAL LOGICAL POSITION
+
+The most important interpretive question is what the bilingual alignment means.
+It is tempting to say that the model has learned language-invariant logic. That
+would be too strong.
+
+The safer interpretation is proposition tracking under shared formal
+supervision. The Tractatus numbering system encodes a formal organization of the
+book. Proposition ids are not arbitrary labels in the ordinary sense; they mark
+positions in a hierarchy. If German and English versions of proposition 4.121
+are close in z_structure, and if z_structure also supports parent, depth, and
+next prediction, then the latent is tracking something about the proposition's
+formal role in the Tractatus.
+
+This is not the same as philosophical understanding. The model is not shown to
+understand what proposition 4.121 means. It is not shown to reason from that
+proposition to another. It is not shown to generalize to unseen philosophical
+texts. It is shown to place two language realizations of the same numbered
+proposition near one another in a learned structure space trained on the shared
+hierarchy.
+
+That result still matters. It answers a concrete objection to the monolingual
+paper. If the English-only structure latent were merely a lexical embedding,
+then introducing German should disrupt proposition-level alignment. Instead,
+the bilingual results show strong alignment. The no-alignment baseline already
+retrieves matching cross-language propositions with top-1 0.9211. Moderate
+alignment improves this to 0.9363.
+
+The best description is therefore:
+
+    z_structure tracks proposition-level formal position across German and
+    English realizations under shared Tractatus hierarchy supervision.
+
+This is a meaningful result about the geometry of the learned representation.
+It is not a claim that the model appreciates logic in the human philosophical
+sense.
+
+
+9. DISCUSSION
+
+The bilingual experiment strengthens the original split-latent result in three
+ways.
+
+First, it shows that the structure latent is not tied only to English text. The
+model reconstructs German and English through language-conditioned decoding,
+while the structural heads operate on a shared z_structure. The resulting
+cross-language retrieval scores are high.
+
+Second, it shows that explicit alignment is not the whole story. The
+lambda_language_alignment = 0.00 baseline already performs strongly. This
+suggests that shared hierarchy supervision itself pulls same-proposition German
+and English structure latents into compatible regions. The alignment loss then
+acts as an additional pressure, not as the only source of bilingual structure.
+
+Third, it reveals a tradeoff. A small amount of alignment can help. Too much
+alignment harms the representation. At lambda_language_alignment = 1.00, the
+model loses important structural distinctions. This is consistent with the
+purpose of z_structure: it must align same-id language realizations, but it must
+also keep different propositions apart in ways that preserve hierarchy.
+
+The result also clarifies the role of reconstruction. The best reconstruction
+loss occurs at lambda_language_alignment = 0.30, with reconstruction loss 1.1883
+and perplexity 3.2815. But that setting is not the best structure model. Its
+cross-language top-1 retrieval falls to 0.8555, and its next accuracy falls to
+0.5428. This confirms a central lesson of the monolingual paper: reconstruction
+quality alone is not enough to judge whether the latent space carries the
+intended formal structure.
+
+
+10. LIMITATIONS
+
+The limitations are substantial.
+
+The dataset is small. It contains 526 propositions and 1052 flattened bilingual
+samples. This is enough for a controlled proof-of-principle experiment, but not
+enough to support broad claims about multilingual reasoning.
+
+The German and English texts are aligned by proposition id. This is a favorable
+setting for cross-language retrieval. The experiment does not show that the
+model could discover such alignments from unpaired text.
+
+The structural supervision is derived from the Tractatus numbering system. The
+model is not discovering the hierarchy from raw text alone. It is learning a
+latent representation under explicit weak supervision from parent, depth, next,
+and child-count targets.
+
+The evaluation is in-sample. The reported retrieval and hierarchy metrics do not
+establish out-of-sample generalization to unseen propositions, unseen sections,
+or other philosophical works.
+
+The result is specific to the Tractatus. The book is unusually structured, and
+its German and English versions are parallel realizations of the same numbered
+work. Other texts may not provide comparable formal scaffolding.
+
+The model uses a simple word-level modelling setup rather than a modern
+multilingual tokenizer or pretrained multilingual encoder. This is useful for
+interpretability, but it limits direct comparison with contemporary multilingual
+language models.
+
+Finally, the philosophical interpretation must remain modest. The model does
+not understand Wittgenstein. It does not prove language-invariant logic. It
+learns a compact structure latent that aligns bilingual proposition realizations
+under shared hierarchy supervision.
+
+
+11. CONCLUSION
+
+The bilingual experiment provides a focused extension of the original
+split-latent Tractatus model. The original result showed that an 8-dimensional
+structure latent could recover useful information about the formal hierarchy of
+the English Tractatus. The bilingual result shows that this structure latent can
+also align German and English realizations of the same propositions.
+
+The strongest evidence is the cross-language retrieval result. With no explicit
+alignment loss, top-1 retrieval is already 0.9211 and MRR is 0.9575. With
+moderate alignment at lambda_language_alignment = 0.10, retrieval improves to
+top-1 0.9363 and MRR 0.9621. The best hierarchy metrics occur at
+lambda_language_alignment = 0.03. High alignment at 1.00 degrades both hierarchy
+prediction and retrieval.
+
+The conclusion is therefore not that the model has learned general logic. The
+conclusion is that, in this aligned bilingual Tractatus setting, the split-latent
+model learns a proposition-level structural representation shared across German
+and English realizations.
+
+
+12. FUTURE WORK
+
+The immediate next step is to repeat the best settings over multiple random
+seeds. The present sweep establishes the shape of the tradeoff, but it does not
+measure variance.
+
+A second step is to add held-out evaluations. Section-level or proposition-level
+splits would test whether the learned structure representation generalizes
+beyond the exact propositions used in training.
+
+A third step is to compare against multilingual sentence embeddings. Such a
+comparison would help distinguish what is gained by the explicit split-latent
+architecture and hierarchy supervision.
+
+A fourth step is to test weaker alignment conditions. For example, the model
+could be trained with partial bilingual coverage, missing translations, or
+unpaired propositions.
+
+A fifth step is to extend the dataset to additional translations if reliable
+public-domain sources are available. This would test whether the structural
+latent remains stable beyond German and English.
+
+Finally, similar methods could be applied to other formally organized texts.
+The key requirement is not that the text be philosophical, but that it have a
+meaningful explicit structure that can be used as weak supervision.
+
+
+13. REFERENCES
+
+Wittgenstein, Ludwig. Tractatus Logico-Philosophicus.
+
+Project Gutenberg Tractatus source used for the German and English proposition
+texts.
+
+Kingma, Diederik P., and Max Welling. Auto-Encoding Variational Bayes.
+
+Repository artifacts and documentation:
+
+    paper/tractatus_latent_logic_paper.txt
+    paper/bilingual_results_summary.txt
+    docs/dataset.md
+    docs/model.md
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/BILINGUAL_ALIGNMENT_LAMBDA_SWEEP.md
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+    paper/PAPER.md
+
+
+14. APPENDIX: ARTIFACTS
+
+Dataset:
+
+    tractatus_latent_logic/data/tractatus_bilingual.json
+
+Canonical bilingual seed-sweep root:
+
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/
+
+Alignment-strength folders:
+
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/
+
+Each alignment folder contains:
+
+    checkpoints/
+    logs/
+    metrics/
+    latents/
+    summaries/
+    manifest.json
+
+Summary artifacts:
+
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+    runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison/
+
+Figure artifacts:
+
+    paper/figures/bilingual_alignment_retrieval_sweep.png
+    paper/figures/bilingual_alignment_retrieval_sweep.pdf
+    paper/figures/bilingual_structure_accuracy_sweep.png
+    paper/figures/bilingual_structure_accuracy_sweep.pdf
+    paper/figures/bilingual_retrieval_structure_tradeoff.png
+    paper/figures/bilingual_retrieval_structure_tradeoff.pdf
+    paper/figures/bilingual_reconstruction_sweep.png
+    paper/figures/bilingual_reconstruction_sweep.pdf
+    paper/figures/bilingual_latent_pca_language_align010_seed000.png
+    paper/figures/bilingual_latent_pca_language_align010_seed000.pdf
+    paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+    paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf

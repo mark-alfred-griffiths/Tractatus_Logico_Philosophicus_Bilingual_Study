@@ -1,0 +1,37 @@
+Bilingual Companion Paper Results Summary
+==========================================
+
+Canonical source files
+----------------------
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/metrics/seed*.metrics.json
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/metrics/seed*.metrics.json
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/metrics/seed*.metrics.json
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/metrics/seed*.metrics.json
+- runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/metrics/seed*.metrics.json
+- tractatus_structure_latents/data/tractatus_bilingual.json
+
+Canonical sweep
+---------------
+- Alignment values: 0.00, 0.03, 0.10, 0.30, 1.00
+- Seeds per alignment value: 10, seeds 0..9
+- Metric figures report means with +/- one-standard-deviation error bars.
+
+Canonical figure artifacts
+--------------------------
+- paper/figures/bilingual_alignment_retrieval_sweep.png
+- paper/figures/bilingual_alignment_retrieval_sweep.pdf
+- paper/figures/bilingual_structure_accuracy_sweep.png
+- paper/figures/bilingual_structure_accuracy_sweep.pdf
+- paper/figures/bilingual_retrieval_structure_tradeoff.png
+- paper/figures/bilingual_retrieval_structure_tradeoff.pdf
+- paper/figures/bilingual_reconstruction_sweep.png
+- paper/figures/bilingual_reconstruction_sweep.pdf
+- paper/figures/bilingual_latent_pca_language_align010_seed000.png
+- paper/figures/bilingual_latent_pca_language_align010_seed000.pdf
+- paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+- paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf
+
+Interpretation guardrail
+------------------------
+These results should be interpreted as proposition-level formal-position alignment, not as evidence of general language-invariant logical understanding. The German and English texts are paired by proposition id, the structural supervision is derived from the Tractatus numbering hierarchy, and the dataset is small and text-specific.

@@ -1,0 +1,689 @@
+Recovering Latent Logical Structure from the Tractatus Numbering System
+with a Split-Latent Variational Autoencoder
+
+Author: Mark Alfred Griffiths
+Project: Tractatus Latent Logic
+
+
+ABSTRACT
+
+This paper describes a proof-of-principle experiment: whether the hierarchical
+numbering system of Wittgenstein's Tractatus Logico-Philosophicus can be used as
+weak supervision for learning a latent representation of logical structure. The
+project treats each numbered proposition as a small structured data point. The
+text of the proposition is used for reconstruction, while the numbering system
+provides structural targets such as parent proposition, depth, next proposition,
+and number of children.
+
+The first model was a recurrent variational autoencoder with a single
+32-dimensional latent vector. This baseline reconstructed text but did not
+produce a useful hierarchy in latent space. The successful model split the latent
+space into two parts: a 24-dimensional text latent used by the decoder, and an
+8-dimensional structure latent used only by hierarchy-prediction heads. This
+separation made the model easier to interpret and solved the main tradeoff in
+the single-latent approach.
+
+The retained split-latent models show that the 8-dimensional structure latent
+recovers a strong representation of the Tractatus hierarchy. Nearest-neighbor
+family agreement rises from 3.0 percent in the baseline to 81.0 percent in the
+strongest split-latent model. The result does not show that the model understands
+Wittgenstein's philosophy. It shows something narrower and more concrete: the
+formal logical scaffolding encoded by the numbering system can be recovered in a
+compact learned latent space.
+
+
+1. INTRODUCTION
+
+The Tractatus Logico-Philosophicus is not arranged like an ordinary essay. Its
+propositions are numbered hierarchically. Proposition 1 is followed by
+subordinate propositions such as 1.1, 1.11, and 1.12. Proposition 4.12 is
+elaborated by descendants such as 4.121. The numbering is not merely decorative.
+It is part of the organisation of the book. It tells the reader how propositions
+stand in relation to one another.
+
+This project asks a machine-learning question about that structure. Can a model
+learn a latent representation that reflects the proposition hierarchy, rather
+than simply memorising or reconstructing text? More directly: is there anything
+in the learned latents that corresponds to the logical organisation of the
+Tractatus?
+
+The question matters because the Tractatus is a small but unusually structured
+corpus. It is not large enough to train a general language model in the usual
+modern sense. But it is rich in formal relations. Each numbered proposition has a
+position in a tree. It may have a parent, children, siblings, ancestors, and a
+next proposition in textual order. These relations can be derived from the
+numbering system and used as weak supervision.
+
+The central hypothesis is modest. The model is not expected to understand the
+philosophical content of the book. Instead, the aim is to test whether the formal
+manifold implied by the numbering system can be made visible in a learned latent
+space.
+
+The main result is that the split-latent model works substantially better than a
+single-latent VAE. The split model separates text reconstruction from hierarchy
+prediction. This creates one subspace for reconstructing proposition text and a
+separate subspace for structural role. The structure subspace then becomes
+strongly organised by depth, top-level section, and family membership.
+
+
+2. DATASET
+
+The dataset contains one row for each numbered English proposition in the
+Tractatus. It is stored in the repository at:
+
+    tractatus_latent_logic/data/tractatus.json
+
+Each proposition is represented as a structured object with both text and
+hierarchy-derived fields. The core schema is:
+
+    id:             Tractatus proposition number, for example "4.121"
+    parent_id:      nearest parent proposition, or null for top-level entries
+    depth:          hierarchy depth inferred from the numbering
+    text:           English proposition text
+    next_id:        next proposition in reading order, or null for proposition 7
+    children:       direct child propositions
+    siblings:       propositions with the same parent
+    ancestor_chain: ordered ancestors from root to parent
+    child_count:    number of direct children
+
+A simplified example is:
+
+    id: "4.121"
+    parent_id: "4.12"
+    depth: 4
+    text: "Propositions cannot represent the logical form..."
+    next_id: "4.1211"
+    children: ["4.1211", "4.1212"]
+    siblings: ["4.122", "4.123"]
+    ancestor_chain: ["4", "4.1", "4.12"]
+    child_count: 2
+
+The retained dataset has the following statistics:
+
+    propositions:       526
+    non-leaf nodes:     168
+    maximum children:   14
+    average words:      38.21
+    first proposition:  1
+    last proposition:   7
+
+Depth distribution:
+
+    depth 1:   7
+    depth 2:   25
+    depth 3:   124
+    depth 4:   245
+    depth 5:   118
+    depth 6:   7
+
+Top-level section distribution:
+
+    section 1:   7
+    section 2:   79
+    section 3:   74
+    section 4:   109
+    section 5:   151
+    section 6:   105
+    section 7:   1
+
+The dataset is therefore small, but it has a non-trivial hierarchy. Most
+propositions are not top-level claims. They are elaborations, sub-elaborations,
+or local developments within a structured tree.
+
+
+3. HOW TO UNDERSTAND THE MODEL
+
+This section explains the model slowly and concretely. The project uses a
+variational autoencoder, or VAE. A VAE is a model that learns to compress an
+input into a latent representation and then reconstruct the input from that
+representation.
+
+In this project, the input is one Tractatus proposition at a time. For example,
+the input might be proposition 4.121 with its English text. The model reads the
+words, compresses the proposition into a small vector, and then tries to
+reconstruct the original words from that vector.
+
+The important idea is that the latent vector is a bottleneck. The model cannot
+copy the proposition directly. It has to decide what information to preserve in
+a compressed form. If the bottleneck is trained only for text reconstruction, it
+will mostly preserve information useful for predicting words. If the bottleneck
+is also trained to predict hierarchy, it can preserve information about the
+proposition's logical role.
+
+The basic flow is:
+
+    proposition text
+      -> encoder
+      -> latent vector
+      -> decoder
+      -> reconstructed proposition text
+
+The encoder is the part that reads the proposition. The decoder is the part that
+tries to write it back out. The latent vector is the compressed internal state
+between them.
+
+A normal autoencoder would map each proposition to one fixed vector. A VAE does
+something slightly different. It maps each proposition to a probability
+distribution over possible latent vectors. In practice, the encoder outputs two
+vectors:
+
+    mu:     the centre of the latent distribution
+    logvar: the log-variance of the latent distribution
+
+The model then samples a latent vector z from that distribution. So instead of
+saying "this proposition is exactly this point", the VAE says "this proposition
+is represented by a small region of latent space, centred here, with this amount
+of uncertainty".
+
+This matters because it regularises the representation. The model is encouraged
+to learn a smooth latent space rather than a lookup table. Nearby latent points
+should decode to related propositions or serve related predictive roles.
+
+The VAE has two main pressures:
+
+    1. Reconstruction pressure.
+       The latent must contain enough information to reconstruct the words.
+
+    2. KL regularisation pressure.
+       The latent distribution should not drift too far from a simple standard
+       normal prior.
+
+The reconstruction term says: "keep useful information".
+
+The KL term says: "do not use unlimited capacity; keep the latent compact and
+smooth".
+
+The balance between these two pressures is controlled by beta. A small beta
+allows the model to use more latent capacity. A larger beta compresses the
+latent more strongly. If beta is too strong, the model may ignore the latent and
+rely mostly on the decoder language model. This is called posterior collapse.
+In the retained baseline, the total KL is approximately 0.00, which indicates
+that the baseline latent carries very little information.
+
+This is why looking only at reconstruction is not enough. A model can reconstruct
+text while still having an uninteresting or collapsed latent space. The central
+question here is not merely "can the model reconstruct the Tractatus?" The real
+question is "does the latent space contain the hierarchy?"
+
+
+4. BASELINE MODEL: ONE LATENT FOR EVERYTHING
+
+The baseline model is a recurrent VAE with a single 32-dimensional latent vector.
+Each proposition is tokenised and passed through an embedding layer and a
+bidirectional GRU encoder. The encoder reads the proposition both forwards and
+backwards, so its final representation can reflect the whole sentence rather
+than just the final words.
+
+The baseline architecture is:
+
+    text tokens
+      -> embedding
+      -> bidirectional GRU encoder
+      -> mean and log-variance
+      -> latent z, 32 dimensions
+      -> GRU decoder
+      -> reconstructed text
+
+The parts have the following roles.
+
+The embedding layer converts discrete word tokens into learned numerical vectors.
+The GRU encoder processes those vectors in sequence. The mean and log-variance
+layers convert the encoder state into a Gaussian latent distribution. The sampled
+latent z is the compressed representation of the proposition. The GRU decoder
+uses z to reconstruct the proposition token by token.
+
+The baseline loss is:
+
+    reconstruction loss + beta * KL divergence
+
+Reconstruction loss measures how badly the decoder predicts the original words.
+KL divergence measures how far the latent distribution is from the standard
+normal prior. Lower reconstruction loss means better text reconstruction. Lower
+KL means stronger compression, but if KL becomes too low the latent may contain
+almost no information.
+
+The project also attaches structural prediction heads to the baseline latent:
+
+    parent_head(z)
+    depth_head(z)
+    next_head(z)
+    child_count_head(z)
+
+These heads ask the same 32-dimensional vector to predict:
+
+    parent proposition
+    hierarchy depth
+    next proposition
+    number of direct children
+
+This is the first important modelling problem. The same latent vector is being
+asked to serve two roles at once.
+
+For text reconstruction, the latent should preserve information such as topic,
+word choice, and local phrasing. For hierarchy prediction, the latent should
+preserve information such as whether the proposition is a top-level claim, a
+subordinate clarification, a member of a local family, or a transition to the
+next proposition. These roles overlap only partly.
+
+The baseline result confirmed that this single-latent setup is not good enough.
+The model can reconstruct text, but the latent geometry is weak. Its nearest
+neighbor family agreement is only 3.0 percent. In practical terms, if one takes
+a proposition and asks which other proposition is closest to it in baseline
+latent space, that neighbor is almost never from the same local proposition
+family.
+
+The baseline teaches an important negative lesson: text reconstruction alone
+does not force the latent space to represent logical structure. A latent can be
+useful for decoding words without being organised by the Tractatus hierarchy.
+
+
+5. SPLIT-LATENT MODEL: SEPARATING TEXT FROM STRUCTURE
+
+The successful model keeps the total latent size at 32 dimensions, but splits it
+into two parts:
+
+    z_text:       24 dimensions
+    z_structure:  8 dimensions
+
+This is the central design decision of the project.
+
+The decoder receives only z_text:
+
+    z_text -> GRU decoder -> reconstructed proposition text
+
+The hierarchy heads receive only z_structure:
+
+    z_structure -> parent prediction
+    z_structure -> depth prediction
+    z_structure -> next proposition prediction
+    z_structure -> child count prediction
+
+The full information flow is:
+
+    proposition text
+      -> encoder
+      -> mu_text, logvar_text
+      -> mu_structure, logvar_structure
+      -> z_text ----------------> decoder
+      -> z_structure -----------> structure heads
+
+This makes the division of labour explicit. The text latent is responsible for
+reconstruction. The structure latent is responsible for hierarchy. The decoder
+cannot directly use z_structure, and the structure heads cannot directly use
+z_text.
+
+This design is useful because it makes the result interpretable. If the
+structure latent clusters by depth or family, then the hierarchy really is being
+represented in the structure subspace. It is not merely an accidental side effect
+of the decoder using every available dimension for word prediction.
+
+The four structure heads have different meanings.
+
+Parent prediction asks:
+
+    Given this proposition's structure latent, can the model identify the
+    proposition's parent in the Tractatus tree?
+
+This is a direct test of local hierarchy. A high parent accuracy means the
+latent contains enough information to place the proposition under the right
+immediate superior proposition.
+
+Depth prediction asks:
+
+    Given this proposition's structure latent, can the model identify how deep
+    the proposition is in the numbering system?
+
+Depth is a coarse structural role. Top-level propositions, second-level
+propositions, and deep elaborations play different roles in the book's formal
+organisation.
+
+Next proposition prediction asks:
+
+    Given this proposition's structure latent, can the model identify the next
+    proposition in reading order?
+
+This is harder than depth prediction because it asks the model to learn the
+linear progression of the text as well as the tree structure. The next relation
+is not exactly the same as parent-child structure. It captures movement through
+the work.
+
+Child count prediction asks:
+
+    Given this proposition's structure latent, can the model predict how many
+    immediate children this proposition has?
+
+This is a rough measure of branching role. Some propositions are leaves. Others
+open out into many elaborations. Child count asks whether the latent knows
+whether a proposition is structurally generative.
+
+The full split-latent training objective is:
+
+    reconstruction loss
+    + beta_text * KL(z_text)
+    + beta_structure * KL(z_structure)
+    + lambda_parent * parent loss
+    + lambda_depth * depth loss
+    + lambda_next * next proposition loss
+    + lambda_child * child count loss
+
+Each term has a specific role.
+
+Reconstruction loss trains z_text and the decoder to preserve enough information
+to recover the proposition text.
+
+KL(z_text) keeps the text latent compact and prevents it from becoming an
+unregularised memory store.
+
+KL(z_structure) keeps the structure latent compact. This is especially important
+because the hierarchy heads could otherwise encourage the structure latent to
+spread out too much.
+
+Parent loss trains z_structure to encode local tree position.
+
+Depth loss trains z_structure to encode vertical level in the hierarchy.
+
+Next proposition loss trains z_structure to encode sequential progression.
+
+Child count loss trains z_structure to encode branching role.
+
+The retained experiments use:
+
+    beta_text = 0.01
+    beta_structure = 0.03, 0.05, or 0.08
+    lambda_parent = 0.2
+    lambda_depth = 0.1
+    lambda_next = 0.2
+    lambda_child = 0.02
+
+The beta_structure sweep is important. It asks how much compression can be
+applied to z_structure before the hierarchy disappears.
+
+With beta_structure = 0.03, the structure latent is less compressed and gives
+the strongest hierarchy. This is the clearest demonstration model.
+
+With beta_structure = 0.05, the structure latent is more compressed but still
+keeps strong hierarchy. This is the best balanced research model.
+
+With beta_structure = 0.08, the structure latent is compressed most strongly. It
+loses some parent and next-proposition accuracy, but it still preserves strong
+nearest-neighbor depth and family geometry.
+
+The split-latent model therefore solves the main tradeoff in the baseline. It
+lets the model reconstruct text without forcing the same dimensions to carry all
+of the hierarchy. It also lets the hierarchy be regularised independently from
+text reconstruction.
+
+6. EXPERIMENTS
+
+The canonical retained experiment is now the balanced English split-latent
+configuration repeated across seeds 0..9.
+
+    reg005: split latent, beta_structure = 0.05
+    seeds:  0..9
+
+The canonical artifact root is:
+
+    runs/seed_sweeps/monolingual_split_24_8_reg005/
+
+This folder contains checkpoints, logs, metrics, exported structure latents,
+summaries, and a fixed manifest for the repeated-seed study.
+
+The main evaluation metrics are grouped into three categories.
+
+Text metrics:
+
+    reconstruction loss
+    perplexity
+
+Structure metrics:
+
+    parent prediction accuracy
+    depth prediction accuracy
+    next proposition prediction accuracy
+
+Geometry metrics:
+
+    KNN1 same depth
+    KNN1 same top-level section
+    KNN1 same family
+
+The KNN metrics ask whether nearby propositions in latent space are also nearby
+in the Tractatus hierarchy. This is important because a model could achieve
+reasonable classifier accuracy without producing a useful latent geometry. The
+geometry metrics test whether the latent space itself has become structured.
+
+
+7. RESULTS
+
+Before reading the table, each column should be interpreted as follows.
+
+PPL means perplexity. Lower perplexity means better text reconstruction. In this
+project it is computed from reconstruction loss only, not from the total loss,
+because the total loss also includes KL and structure terms.
+
+Total KL measures how much latent information the model is using overall. A KL
+near zero means the latent is almost collapsed. Higher KL means the model is
+using the latent space more.
+
+Structure KL measures how much information is being used specifically in
+z_structure. This column is only meaningful for the split-latent models.
+
+Parent, Depth, and Next are prediction accuracies from the auxiliary structure
+heads. They test whether z_structure contains enough information to recover
+explicit hierarchy targets.
+
+KNN1 Depth, KNN1 Top, and KNN1 Family are geometry tests. For each proposition,
+the evaluation finds its nearest neighbor in latent space. It then asks whether
+that nearest neighbor has the same depth, the same top-level section, or belongs
+to the same local family. These metrics are important because they test the
+shape of the latent space itself, not just classifier accuracy.
+
+The main retained results are:
+
+    Model     beta_structure  PPL   Total KL  Structure KL  Parent  Depth  Next   KNN1 Depth  KNN1 Top  KNN1 Family
+    baseline  n/a             4.66  0.00      n/a           0.0%    23.2%  0.2%   38.8%       26.6%     3.0%
+    reg003    0.03            3.74  17.13     15.11         78.7%   93.5%  48.3%  93.3%       85.0%     81.0%
+    reg005    0.05            3.67  11.48     9.23          70.0%   91.1%  37.3%  89.9%       79.5%     76.2%
+    reg008    0.08            3.61  7.47      5.07          57.8%   89.2%  26.2%  90.3%       77.6%     73.4%
+
+The baseline reconstructs text, but its latent hierarchy is weak. Its KNN1
+family score is only 3.0 percent. This means that nearest neighbors in the
+baseline latent space are almost never members of the same local proposition
+family.
+
+The split-latent models are very different. All three organise z_structure
+strongly by depth, top-level section, and family. The strongest hierarchy model,
+reg003, reaches 81.0 percent KNN1 family agreement and 93.3 percent KNN1 depth
+agreement. Even the most compressed retained model, reg008, preserves 73.4
+percent KNN1 family agreement and 90.3 percent KNN1 depth agreement.
+
+The structure latent norm decreases as beta_structure increases:
+
+    reg003: 5.26
+    reg005: 4.04
+    reg008: 2.99
+
+This confirms that the structure latent is being compressed. The important point
+is that the hierarchy does not collapse under this compression. It weakens
+smoothly, but remains clearly present.
+
+The practical interpretation is:
+
+    reg003 gives the strongest hierarchy.
+    reg005 gives the best balance between compression and structure.
+    reg008 gives the strongest compression while retaining substantial hierarchy.
+
+For future research use, reg005 is the best balanced checkpoint. For a simple
+proof-of-principle demonstration, reg003 is the clearest.
+
+
+[INSERT GRAPHIC: monolingual_latent_pca_depth_reg005_seed000.png]
+Source artifact: paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
+Suggested caption: PCA projection of the reg005 8D structure latent for representative seed 0, coloured by proposition depth. The seed is named explicitly because PCA figures show one trained model rather than an average across seeds.
+
+
+8. WHAT IS IN THE LATENTS?
+
+The strongest evidence that there is something meaningful in the latents comes
+from the structure subspace, not from the text reconstruction score alone.
+
+The baseline latent has almost no useful family geometry. Its KNN1 family score
+is 3.0 percent. That is close to saying that local neighborhoods in the baseline
+latent space do not correspond to local neighborhoods in the proposition tree.
+
+The split structure latent behaves differently. In reg003, if a proposition is
+chosen and its nearest neighbor in z_structure is found, that neighbor is in the
+same family 81.0 percent of the time. It is at the same depth 93.3 percent of
+the time, and in the same top-level section 85.0 percent of the time. These are
+large changes from the baseline.
+
+This means the structure latent is not merely storing arbitrary information. It
+has learned a geometry aligned with the formal hierarchy of the Tractatus. Depth,
+section, and local family are all visible in the learned space.
+
+However, this should be interpreted carefully. The model has been trained with
+structural supervision derived from the numbering system. Therefore the result is
+not an unsupervised discovery of the hierarchy from text alone. The result is
+that a compact 8-dimensional latent subspace can absorb that supervision and
+represent it geometrically while being separated from the text reconstruction
+latent.
+
+That separation is the important technical point. The hierarchy is not simply
+entangled with the decoder's word-prediction features. It lives in a dedicated
+structure latent that the decoder does not see.
+
+A useful way to understand the final model is this:
+
+    z_text answers: What words and local meanings are needed to reconstruct this
+    proposition?
+
+    z_structure answers: Where does this proposition sit in the formal logical
+    scaffolding of the book?
+
+The model does not prove that these two questions are completely independent.
+They are not. The content of a proposition and its place in the book are related.
+But the split-latent design forces the model to express those roles through
+different channels. That is what makes the experiment interpretable.
+
+The most important technical outcome is therefore not merely that the structure
+heads achieve high accuracy. It is that the structure latent itself has coherent
+geometry. Nearby points in z_structure tend to correspond to nearby structural
+roles in the Tractatus. This is why the KNN family and depth scores matter so
+much. They show that hierarchy is present as a spatial organisation, not only as
+an output of a classifier.
+
+
+9. DISCUSSION
+
+The project began with the idea that the Tractatus numbering system encodes an
+underlying logical manifold. The current results support a limited version of
+that idea. The numbering system can be converted into machine-learning targets,
+and a model can learn a compact latent space organised by those targets.
+
+The main lesson is architectural. The single-latent VAE was not enough. It
+mixed reconstruction and hierarchy into one representation, making the result
+weak and difficult to interpret. Splitting the latent space made the model both
+more effective and more intelligible.
+
+The split-latent approach also gives a useful experimental control. By adjusting
+beta_structure, one can study the tradeoff between compression and hierarchy.
+The retained sweep shows that the hierarchy survives increasing regularisation.
+This makes the result more convincing than an unregularised structure embedding
+alone.
+
+There are still important limitations.
+
+First, the results are in-sample. The model is evaluated on the same small corpus
+from which the hierarchy is derived. It is not yet evidence that the model can
+generalise to unseen philosophical propositions.
+
+Second, the structural targets come from the numbering system. The model is not
+discovering the hierarchy without help. It is learning to represent a hierarchy
+that has been supplied as weak supervision.
+
+Third, the hierarchy is formal rather than philosophical. Parent, depth, next
+proposition, and family are useful structural relations, but they do not exhaust
+the logical or philosophical content of the Tractatus.
+
+Fourth, the text corpus is small. The Tractatus is attractive precisely because
+it is compact and structured, but this also limits what can be claimed about
+statistical robustness.
+
+Even with these limitations, the result is promising. It demonstrates that the
+numbering system can be operationalised, that the model can separate text and
+structure, and that the resulting structure latent contains a clear geometric
+signal.
+
+
+10. CONCLUSION
+
+The work so far demonstrates a proof of principle. A split-latent VAE can learn
+a compact representation of the Tractatus proposition hierarchy. The successful
+model uses a 24-dimensional text latent for reconstruction and an 8-dimensional
+structure latent for hierarchy prediction. The structure latent becomes strongly
+organised by depth, top-level section, and family membership.
+
+The central empirical result is the contrast between the baseline and the split
+model. The baseline has 3.0 percent KNN1 family agreement. The strongest split
+model has 81.0 percent. The best balanced model has 76.2 percent while using a
+more compressed structure latent.
+
+The current claim should be stated precisely: the model has not understood
+Wittgenstein. It has learned a compact latent geometry corresponding to the
+formal logical scaffolding encoded in the Tractatus numbering system. That is a
+real and useful result, and it provides a foundation for further work on latent
+logical structure, bilingual alignment, active inference, and comparison with
+other formally organised philosophical or mathematical texts.
+
+
+11. FUTURE WORK
+
+The next research steps are:
+
+    1. Add held-out evaluation by masking or withholding parts of the hierarchy.
+    2. Train a latent dynamics model for predicting z_structure at the next proposition.
+    3. Compare English and German versions of the Tractatus with aligned structure latents.
+    4. Test whether the same approach works on other structured texts, such as Spinoza's Ethics, Euclid's Elements, or Principia Mathematica.
+    5. Develop the active-inference version, where latent states are interpreted as hidden logical causes and updated through prediction error.
+
+The most immediate next step is held-out structural evaluation. That would make
+the current proof of principle stronger by testing whether the learned structure
+latent generalises beyond direct in-sample supervision.
+
+
+REFERENCES
+
+Kingma, D. P. and Welling, M. (2013). Auto-Encoding Variational Bayes.
+arXiv:1312.6114.
+
+Higgins, I. et al. (2017). beta-VAE: Learning Basic Visual Concepts with a
+Constrained Variational Framework. International Conference on Learning
+Representations.
+
+Wittgenstein, L. (1922). Tractatus Logico-Philosophicus. Translated by C. K.
+Ogden. Kegan Paul, Trench, Trubner and Co.
+
+
+APPENDIX: CANONICAL ARTIFACTS
+
+Monolingual seed sweep:
+
+    runs/seed_sweeps/monolingual_split_24_8_reg005/
+
+This folder contains:
+
+    checkpoints/
+    logs/
+    metrics/
+    latents/
+    summaries/
+    manifest.json
+
+Canonical representative figure:
+
+    paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
+    paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf
+
+Canonical summary files are generated under:
+
+    runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/

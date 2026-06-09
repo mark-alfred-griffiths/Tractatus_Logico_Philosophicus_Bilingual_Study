@@ -1,0 +1,26 @@
+{
+  "loss": 1.7599389950434368,
+  "reconstruction_loss": 1.2907518678241305,
+  "kl": 11.038680818345812,
+  "kl_text": 2.0686735444598727,
+  "kl_structure": 8.970007472568089,
+  "perplexity": 3.635518789291382,
+  "parent_accuracy": 0.7034220532319392,
+  "depth_accuracy": 0.9486692015209125,
+  "next_accuracy": 0.3726235741444867,
+  "reconstruction_loss_by_language": {
+    "en": 1.2856876369664878
+  },
+  "parent_accuracy_by_language": {
+    "en": 0.7034220532319392
+  },
+  "depth_accuracy_by_language": {
+    "en": 0.9486692015209125
+  },
+  "next_accuracy_by_language": {
+    "en": 0.3726235741444867
+  },
+  "mean_parent_child_distance": 5.928655510003856,
+  "mean_sibling_distance": 2.0378810593060086,
+  "mean_unrelated_distance": 5.467863128212469
+}
