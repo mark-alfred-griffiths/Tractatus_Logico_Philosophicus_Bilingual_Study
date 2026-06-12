@@ -27,10 +27,10 @@ Canonical figure artifacts
 - paper/figures/bilingual_retrieval_structure_tradeoff.pdf
 - paper/figures/bilingual_reconstruction_sweep.png
 - paper/figures/bilingual_reconstruction_sweep.pdf
-- paper/figures/bilingual_latent_pca_language_align010_seed000.png
-- paper/figures/bilingual_latent_pca_language_align010_seed000.pdf
-- paper/figures/bilingual_latent_pca_depth_align010_seed000.png
-- paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf
+- paper/figures/bilingual_latent_pca_language_align003_seed000.png
+- paper/figures/bilingual_latent_pca_language_align003_seed000.pdf
+- paper/figures/bilingual_latent_pca_depth_align003_seed000.png
+- paper/figures/bilingual_latent_pca_depth_align003_seed000.pdf
 
 Interpretation guardrail
 ------------------------

@@ -171,7 +171,7 @@ Generate paper figures. Metric sweep figures use means across seeds `0..9` with 
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
   --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
@@ -189,8 +189,8 @@ paper/figures/bilingual_reconstruction_sweep.png
 It also creates representative PCA figures such as:
 
 ```text
-paper/figures/bilingual_latent_pca_language_align010_seed000.png
-paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+paper/figures/bilingual_latent_pca_language_align003_seed000.png
+paper/figures/bilingual_latent_pca_depth_align003_seed000.png
 paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
 ```
 
@@ -208,16 +208,16 @@ python3 -m tractatus_structure_latents.evaluation.visualise_latents \
   --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/seed000_pca_depth.png
 ```
 
-Bilingual language PCA for lambda `0.10`, seed `000`:
+Bilingual language PCA for lambda `0.03`, seed `000`:
 
 ```bash
 python3 -m tractatus_structure_latents.evaluation.visualise_latents \
-  --latents runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/latents/seed000_structure.pt \
-  --ids runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/latents/seed000_structure.ids.json \
+  --latents runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/latents/seed000_structure.pt \
+  --ids runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/latents/seed000_structure.ids.json \
   --data tractatus_structure_latents/data/tractatus_bilingual.json \
   --method pca \
   --colour-by language \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/seed000_pca_language.png
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/seed000_pca_language.png
 ```
 
 ## Cleanup Policy
