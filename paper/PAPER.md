@@ -25,7 +25,7 @@ Generate paper figures from the canonical seed-sweep outputs:
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
   --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
@@ -36,7 +36,7 @@ Metric sweep figures show means across seeds `0..9` with +/- one-standard-deviat
 Representative PCA figures use one trained model and include the seed label in both the title and filename. The default representative model is:
 
 ```text
-alignment: align010
+alignment: align003
 seed:      seed000
 ```
 
@@ -52,8 +52,8 @@ paper/figures/bilingual_reconstruction_sweep.png
 ## Generated Representative PCA Figures
 
 ```text
-paper/figures/bilingual_latent_pca_language_align010_seed000.png
-paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+paper/figures/bilingual_latent_pca_language_align003_seed000.png
+paper/figures/bilingual_latent_pca_depth_align003_seed000.png
 paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
 ```
 

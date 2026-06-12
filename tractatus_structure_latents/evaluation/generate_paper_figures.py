@@ -112,7 +112,7 @@ def main() -> None:
     parser.add_argument("--monolingual-dir", type=Path, default=Path("runs/seed_sweeps/monolingual_split_24_8_reg005"))
     parser.add_argument("--out-dir", type=Path, default=Path("paper/figures"))
     parser.add_argument("--summary-out", type=Path, default=Path("runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json"))
-    parser.add_argument("--representative-alignment", default="align010", help="Alignment folder used for representative PCA figures.")
+    parser.add_argument("--representative-alignment", default="align003", help="Alignment folder used for representative PCA figures.")
     parser.add_argument("--representative-seed", type=int, default=0, help="Seed used for representative PCA figures.")
     parser.add_argument("--bilingual-data", type=Path, default=Path("tractatus_structure_latents/data/tractatus_bilingual.json"))
     parser.add_argument("--monolingual-data", type=Path, default=Path("tractatus_structure_latents/data/tractatus.json"))

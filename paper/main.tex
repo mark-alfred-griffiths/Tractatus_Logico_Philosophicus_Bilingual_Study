@@ -348,7 +348,7 @@ Several points matter. First, explicit alignment is not required for strong cros
 
 Second, light alignment is the best-supported setting in the ten-seed sweep. At \path{lambda_language_alignment} = 0.03, top-1 retrieval is $0.9365 \pm 0.0103$ and MRR is $0.9662 \pm 0.0058$. Parent, depth, and next-proposition accuracies are also among the strongest values in the sweep.
 
-Third, the previous single-run emphasis on \path{lambda_language_alignment} = 0.10 should be treated as superseded by the seed sweep. The representative PCA plots still use \texttt{align010} seed 0 as a visually stable example, but the quantitative conclusion comes from the ten-seed sweep. On average, 0.03 is better supported than 0.10.
+Third, the previous single-run emphasis on \path{lambda_language_alignment} = 0.10 should be treated as superseded by the seed sweep. On average, 0.03 is better supported than 0.10, so the representative PCA plots use \texttt{align003} seed 0.
 
 Fourth, high alignment damages the model. At \path{lambda_language_alignment} = 1.00, mean top-1 retrieval falls to $0.7943 \pm 0.0188$, MRR falls to $0.8577 \pm 0.0130$, parent accuracy falls to 0.5736, depth accuracy falls to 0.7984, and next-proposition accuracy falls to 0.3614.
 
@@ -356,19 +356,19 @@ The result is therefore not that more alignment is always better. The better int
 
 \section{Latent Visualization}
 
-The PCA figures are representative-seed diagnostics, not multi-seed aggregate figures. They show one trained model and therefore must identify both the alignment setting and seed. The canonical bilingual PCA figures use \path{lambda_language_alignment} = 0.10 and seed 0, labelled as align 0.10 and seed 0 in the figure titles.
+The PCA figures are representative-seed diagnostics, not multi-seed aggregate figures. They show one trained model and therefore must identify both the alignment setting and seed. The canonical bilingual PCA figures use \path{lambda_language_alignment} = 0.03 and seed 0, labelled as align 0.03 and seed 0 in the figure titles.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.72\linewidth]{paper/figures/bilingual_latent_pca_language_align010_seed000.pdf}
-\caption{PCA projection of representative $\lambda=0.10$, seed 0 structure latents, coloured by language. German and English samples occupy the same broad structure space rather than separating into two isolated language clusters.}
+\includegraphics[width=0.72\linewidth]{paper/figures/bilingual_latent_pca_language_align003_seed000.pdf}
+\caption{PCA projection of representative $\lambda=0.03$, seed 0 structure latents, coloured by language. German and English samples occupy the same broad structure space rather than separating into two isolated language clusters.}
 \label{fig:bilingual-pca-language}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.72\linewidth]{paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf}
-\caption{PCA projection of representative $\lambda=0.10$, seed 0 structure latents, coloured by \emph{Tractatus} hierarchy depth. The plot is a visual diagnostic of structural organization, not a proof of semantic understanding.}
+\includegraphics[width=0.72\linewidth]{paper/figures/bilingual_latent_pca_depth_align003_seed000.pdf}
+\caption{PCA projection of representative $\lambda=0.03$, seed 0 structure latents, coloured by \emph{Tractatus} hierarchy depth. The plot is a visual diagnostic of structural organization, not a proof of semantic understanding.}
 \label{fig:bilingual-pca-depth}
 \end{figure}
 
@@ -476,10 +476,10 @@ paper/figures/bilingual_retrieval_structure_tradeoff.png
 paper/figures/bilingual_retrieval_structure_tradeoff.pdf
 paper/figures/bilingual_reconstruction_sweep.png
 paper/figures/bilingual_reconstruction_sweep.pdf
-paper/figures/bilingual_latent_pca_language_align010_seed000.png
-paper/figures/bilingual_latent_pca_language_align010_seed000.pdf
-paper/figures/bilingual_latent_pca_depth_align010_seed000.png
-paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf
+paper/figures/bilingual_latent_pca_language_align003_seed000.png
+paper/figures/bilingual_latent_pca_language_align003_seed000.pdf
+paper/figures/bilingual_latent_pca_depth_align003_seed000.png
+paper/figures/bilingual_latent_pca_depth_align003_seed000.pdf
 paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
 paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf
 \end{verbatim}

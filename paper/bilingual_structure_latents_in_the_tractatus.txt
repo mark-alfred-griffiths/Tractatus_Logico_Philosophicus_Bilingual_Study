@@ -416,10 +416,8 @@ is 0.9662 +/- 0.0058. Parent, depth, and next-proposition accuracies are also
 among the strongest values in the sweep.
 
 Third, the previous single-run emphasis on lambda_language_alignment = 0.10
-should be treated as superseded by the seed sweep. The representative PCA plots
-still use align010 seed 0 as a visually stable example, but the quantitative
-conclusion comes from the ten-seed sweep. On average, 0.03 is better supported
-than 0.10.
+should be treated as superseded by the seed sweep. On average, 0.03 is better
+supported than 0.10, so the representative PCA plots use align003 seed 0.
 
 Fourth, high alignment damages the model. At lambda_language_alignment = 1.00,
 mean top-1 retrieval falls to 0.7943 +/- 0.0188, MRR falls to 0.8577 +/- 0.0130,
@@ -437,19 +435,19 @@ that it collapses distinctions needed for hierarchy prediction.
 The PCA figures are representative-seed diagnostics, not multi-seed aggregate
 figures. They show one trained model and therefore must identify both the
 alignment setting and seed. The canonical bilingual PCA figures use
-lambda_language_alignment = 0.10 and seed 0, labelled as align 0.10 and seed 0
+lambda_language_alignment = 0.03 and seed 0, labelled as align 0.03 and seed 0
 in the figure titles.
 
-[INSERT GRAPHIC: bilingual_latent_pca_language_align010_seed000.png]
-Source artifact: paper/figures/bilingual_latent_pca_language_align010_seed000.png
-Suggested caption: PCA projection of representative lambda=0.10, seed 0
+[INSERT GRAPHIC: bilingual_latent_pca_language_align003_seed000.png]
+Source artifact: paper/figures/bilingual_latent_pca_language_align003_seed000.png
+Suggested caption: PCA projection of representative lambda=0.03, seed 0
 structure latents, coloured by language. German and English samples occupy the
 same broad structure space rather than separating into two isolated language
 clusters.
 
-[INSERT GRAPHIC: bilingual_latent_pca_depth_align010_seed000.png]
-Source artifact: paper/figures/bilingual_latent_pca_depth_align010_seed000.png
-Suggested caption: PCA projection of representative lambda=0.10, seed 0
+[INSERT GRAPHIC: bilingual_latent_pca_depth_align003_seed000.png]
+Source artifact: paper/figures/bilingual_latent_pca_depth_align003_seed000.png
+Suggested caption: PCA projection of representative lambda=0.03, seed 0
 structure latents, coloured by Tractatus hierarchy depth. The plot is a visual
 diagnostic of structural organization, not a proof of semantic understanding.
 
@@ -647,10 +645,10 @@ Canonical figure artifacts:
     paper/figures/bilingual_retrieval_structure_tradeoff.pdf
     paper/figures/bilingual_reconstruction_sweep.png
     paper/figures/bilingual_reconstruction_sweep.pdf
-    paper/figures/bilingual_latent_pca_language_align010_seed000.png
-    paper/figures/bilingual_latent_pca_language_align010_seed000.pdf
-    paper/figures/bilingual_latent_pca_depth_align010_seed000.png
-    paper/figures/bilingual_latent_pca_depth_align010_seed000.pdf
+    paper/figures/bilingual_latent_pca_language_align003_seed000.png
+    paper/figures/bilingual_latent_pca_language_align003_seed000.pdf
+    paper/figures/bilingual_latent_pca_depth_align003_seed000.png
+    paper/figures/bilingual_latent_pca_depth_align003_seed000.pdf
     paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
     paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf
 

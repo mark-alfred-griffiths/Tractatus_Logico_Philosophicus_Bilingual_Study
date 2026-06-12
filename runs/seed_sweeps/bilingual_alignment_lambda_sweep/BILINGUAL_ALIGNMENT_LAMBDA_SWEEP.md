@@ -77,7 +77,7 @@ Metric sweep figures use means across seeds `0..9` with +/- one-standard-deviati
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
   --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
