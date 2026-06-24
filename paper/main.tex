@@ -38,7 +38,7 @@ The dataset contains 526 numbered propositions. In the monolingual study, each r
 
 The monolingual result motivates the architecture. A single 32-dimensional VAE latent reconstructs text but produces weak hierarchy geometry: nearest-neighbor family agreement is 3.0 percent. Splitting the latent into text and structure subspaces produces a compact structure representation in which local geometry tracks the \emph{Tractatus} hierarchy. The retained monolingual seed sweep uses the balanced \texttt{reg005} configuration across seeds 0--9.
 
-The bilingual result extends this finding. Across ten seeds and five alignment strengths, cross-language proposition retrieval is already strong with no explicit alignment loss: top-1 retrieval is $0.9348 \pm 0.0115$ and mean reciprocal rank is $0.9650 \pm 0.0066$. Light alignment at $\lambda_{\mathrm{language\ alignment}} = 0.03$ gives the strongest mean retrieval and hierarchy scores: top-1 retrieval is $0.9365 \pm 0.0103$, MRR is $0.9662 \pm 0.0058$, parent accuracy is 0.8608, depth accuracy is 0.9643, and next-proposition accuracy is 0.6189. High alignment at 1.00 degrades retrieval and hierarchy. The result does not show that the model understands Wittgenstein or learns general language-invariant logic. It shows a narrower result: under aligned German and English proposition texts, and under shared hierarchy supervision, the learned structure latent tracks formal proposition position across languages.
+The bilingual result extends this finding. Across ten seeds and five alignment strengths, cross-language proposition retrieval is already strong with no explicit alignment loss: top-1 retrieval is $0.9348 \pm 0.0115$ and mean reciprocal rank is $0.9650 \pm 0.0066$. Light alignment at $\lambda_{\mathrm{language\ alignment}} = 0.03$ gives the strongest mean retrieval and hierarchy scores: top-1 retrieval is $0.9365 \pm 0.0103$, MRR is $0.9662 \pm 0.0058$, parent accuracy is $0.8608 \pm 0.0094$, depth accuracy is $0.9643 \pm 0.0136$, and next-proposition accuracy is $0.6189 \pm 0.0219$. High alignment at 1.00 degrades retrieval and hierarchy. The result does not show that the model understands Wittgenstein or learns general language-invariant logic. It shows a narrower result: under aligned German and English proposition texts, and under shared hierarchy supervision, the learned structure latent tracks formal proposition position across languages.
 \end{abstract}
 
 \section{Introduction}
@@ -263,57 +263,102 @@ The main bilingual retrieval metrics are cross-language top-1 id accuracy, cross
 
 The bilingual alignment sweep was run across ten seeds for each alignment strength. Metric sweep figures therefore report means with error bars. The error bars are necessary because the paper is now making claims across seeds rather than from a single trained model.
 
-The core seed-sweep results are shown in Table~\ref{tab:bilingual-core}. Directional retrieval is balanced across languages (Table~\ref{tab:directional-retrieval}). By-language parent prediction is also balanced (Table~\ref{tab:by-language-parent}). These checks matter because they rule out a trivial one-sided interpretation. The bilingual alignment is not only German mapping into English, nor only English mapping into German. Both retrieval directions and both language-specific structure predictions show the same broad pattern.
+The core seed-sweep results are shown in Table~\ref{tab:bilingual-core}. Directional retrieval is balanced across languages (Table~\ref{tab:directional-retrieval}). By-language structure prediction is also balanced (Table~\ref{tab:by-language-parent}). These checks matter because they rule out a trivial one-sided interpretation. The bilingual alignment is not only German mapping into English, nor only English mapping into German. Both retrieval directions and both language-specific structure predictions show the same broad pattern.
 
 \begin{table}[htbp]
 \centering
-\caption{Core bilingual seed-sweep results across ten seeds for each alignment strength. Reported retrieval SDs are across seeds.}
+\caption{Core bilingual seed-sweep results across ten seeds for each alignment strength. Values are mean $\pm$ SD across seeds.}
 \label{tab:bilingual-core}
-\begin{tabular}{rrrrrrrrr}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrrrr}
 \toprule
-$\lambda$ & Seeds & Parent & Depth & Next & Top-1 & Top-1 SD & MRR & MRR SD \\
+$\lambda$ & Seeds & Parent & Depth & Next & Top-1 & MRR \\
 \midrule
-0.00 & 10 & 0.8601 & 0.9646 & 0.6202 & 0.9348 & 0.0115 & 0.9650 & 0.0066 \\
-0.03 & 10 & 0.8608 & 0.9643 & 0.6189 & 0.9365 & 0.0103 & 0.9662 & 0.0058 \\
-0.10 & 10 & 0.8539 & 0.9574 & 0.6142 & 0.9227 & 0.0087 & 0.9546 & 0.0043 \\
-0.30 & 10 & 0.8029 & 0.9320 & 0.5596 & 0.8720 & 0.0112 & 0.9143 & 0.0080 \\
-1.00 & 10 & 0.5736 & 0.7984 & 0.3614 & 0.7943 & 0.0188 & 0.8577 & 0.0130 \\
+0.00 & 10 & $0.8601 \pm 0.0094$ & $0.9646 \pm 0.0133$ & $0.6202 \pm 0.0194$ & $0.9348 \pm 0.0115$ & $0.9650 \pm 0.0066$ \\
+0.03 & 10 & $0.8608 \pm 0.0094$ & $0.9643 \pm 0.0136$ & $0.6189 \pm 0.0219$ & $0.9365 \pm 0.0103$ & $0.9662 \pm 0.0058$ \\
+0.10 & 10 & $0.8539 \pm 0.0102$ & $0.9574 \pm 0.0166$ & $0.6142 \pm 0.0237$ & $0.9227 \pm 0.0087$ & $0.9546 \pm 0.0043$ \\
+0.30 & 10 & $0.8029 \pm 0.0110$ & $0.9320 \pm 0.0249$ & $0.5596 \pm 0.0190$ & $0.8720 \pm 0.0112$ & $0.9143 \pm 0.0080$ \\
+1.00 & 10 & $0.5736 \pm 0.0340$ & $0.7984 \pm 0.0415$ & $0.3614 \pm 0.0213$ & $0.7943 \pm 0.0188$ & $0.8577 \pm 0.0130$ \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
 
 \begin{table}[htbp]
 \centering
-\caption{Directional cross-language retrieval.}
+\caption{Directional cross-language retrieval. Values are mean $\pm$ SD across seeds.}
 \label{tab:directional-retrieval}
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{rrrrr}
 \toprule
 $\lambda$ & de$\rightarrow$en Top-1 & en$\rightarrow$de Top-1 & de$\rightarrow$en MRR & en$\rightarrow$de MRR \\
 \midrule
-0.00 & 0.9327 & 0.9369 & 0.9638 & 0.9662 \\
-0.03 & 0.9354 & 0.9376 & 0.9654 & 0.9671 \\
-0.10 & 0.9245 & 0.9209 & 0.9554 & 0.9538 \\
-0.30 & 0.8707 & 0.8732 & 0.9123 & 0.9162 \\
-1.00 & 0.7960 & 0.7926 & 0.8589 & 0.8564 \\
+0.00 & $0.9327 \pm 0.0146$ & $0.9369 \pm 0.0109$ & $0.9638 \pm 0.0085$ & $0.9662 \pm 0.0060$ \\
+0.03 & $0.9354 \pm 0.0133$ & $0.9376 \pm 0.0100$ & $0.9659 \pm 0.0072$ & $0.9666 \pm 0.0054$ \\
+0.10 & $0.9245 \pm 0.0096$ & $0.9209 \pm 0.0089$ & $0.9556 \pm 0.0047$ & $0.9536 \pm 0.0047$ \\
+0.30 & $0.8707 \pm 0.0113$ & $0.8732 \pm 0.0133$ & $0.9134 \pm 0.0078$ & $0.9151 \pm 0.0095$ \\
+1.00 & $0.7960 \pm 0.0170$ & $0.7926 \pm 0.0229$ & $0.8587 \pm 0.0119$ & $0.8566 \pm 0.0149$ \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
 
 \begin{table}[htbp]
 \centering
-\caption{By-language parent prediction accuracy.}
+\caption{By-language structure prediction accuracy. Values are mean $\pm$ SD across seeds.}
 \label{tab:by-language-parent}
-\begin{tabular}{rrr}
+\small
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrrrr}
 \toprule
-$\lambda$ & Parent accuracy, de & Parent accuracy, en \\
+$\lambda$ & Parent, de & Parent, en & Depth, de & Depth, en & Next, de & Next, en \\
 \midrule
-0.00 & 0.8595 & 0.8606 \\
-0.03 & 0.8610 & 0.8606 \\
-0.10 & 0.8519 & 0.8559 \\
-0.30 & 0.8025 & 0.8034 \\
-1.00 & 0.5738 & 0.5734 \\
+0.00 & $0.8595 \pm 0.0108$ & $0.8606 \pm 0.0091$ & $0.9652 \pm 0.0145$ & $0.9641 \pm 0.0131$ & $0.6198 \pm 0.0214$ & $0.6205 \pm 0.0210$ \\
+0.03 & $0.8610 \pm 0.0098$ & $0.8606 \pm 0.0101$ & $0.9648 \pm 0.0149$ & $0.9637 \pm 0.0128$ & $0.6165 \pm 0.0227$ & $0.6213 \pm 0.0246$ \\
+0.10 & $0.8519 \pm 0.0102$ & $0.8559 \pm 0.0122$ & $0.9578 \pm 0.0155$ & $0.9570 \pm 0.0182$ & $0.6158 \pm 0.0269$ & $0.6125 \pm 0.0224$ \\
+0.30 & $0.8025 \pm 0.0120$ & $0.8034 \pm 0.0124$ & $0.9310 \pm 0.0274$ & $0.9331 \pm 0.0233$ & $0.5606 \pm 0.0195$ & $0.5586 \pm 0.0201$ \\
+1.00 & $0.5738 \pm 0.0339$ & $0.5734 \pm 0.0355$ & $0.8002 \pm 0.0447$ & $0.7966 \pm 0.0399$ & $0.3631 \pm 0.0275$ & $0.3597 \pm 0.0164$ \\
 \bottomrule
 \end{tabular}
+}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Bilingual reconstruction and latent regularization diagnostics. Values are mean $\pm$ SD across seeds.}
+\label{tab:bilingual-reconstruction-summary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrrr}
+\toprule
+$\lambda$ & Reconstruction & Perplexity & KL text & KL structure & Same-id distance \\
+\midrule
+0.00 & $1.1893 \pm 0.0193$ & $3.2854 \pm 0.0632$ & $0.8843 \pm 0.1962$ & $10.0893 \pm 0.1250$ & $0.7598 \pm 0.0195$ \\
+0.03 & $1.1911 \pm 0.0237$ & $3.2914 \pm 0.0778$ & $0.9033 \pm 0.1973$ & $10.0786 \pm 0.1272$ & $0.7486 \pm 0.0173$ \\
+0.10 & $1.1880 \pm 0.0215$ & $3.2813 \pm 0.0710$ & $0.8596 \pm 0.2033$ & $9.9755 \pm 0.1535$ & $0.7756 \pm 0.0140$ \\
+0.30 & $1.2116 \pm 0.0201$ & $3.3594 \pm 0.0673$ & $0.7267 \pm 0.1988$ & $9.5007 \pm 0.1895$ & $0.9502 \pm 0.0398$ \\
+1.00 & $1.3198 \pm 0.0290$ & $3.7442 \pm 0.1097$ & $0.4379 \pm 0.2191$ & $7.3225 \pm 0.4283$ & $1.1970 \pm 0.0398$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\caption{Bilingual structure-latent distance diagnostics. Values are mean $\pm$ SD across seeds.}
+\label{tab:bilingual-distance-summary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{rrrrr}
+\toprule
+$\lambda$ & Sibling & Parent-child & Cross-language parent-child & Unrelated \\
+\midrule
+0.00 & $1.8021 \pm 0.0260$ & $6.2126 \pm 0.1088$ & $6.2149 \pm 0.1089$ & $5.8365 \pm 0.0649$ \\
+0.03 & $1.8045 \pm 0.0259$ & $6.2038 \pm 0.1104$ & $6.2060 \pm 0.1106$ & $5.8314 \pm 0.0663$ \\
+0.10 & $1.8491 \pm 0.0207$ & $6.1420 \pm 0.1215$ & $6.1446 \pm 0.1219$ & $5.7964 \pm 0.0741$ \\
+0.30 & $2.0560 \pm 0.0324$ & $5.8920 \pm 0.1310$ & $5.8971 \pm 0.1312$ & $5.6303 \pm 0.0797$ \\
+1.00 & $2.4089 \pm 0.0419$ & $4.9136 \pm 0.2078$ & $4.9203 \pm 0.2057$ & $4.8078 \pm 0.1599$ \\
+\bottomrule
+\end{tabular}
+}
 \end{table}
 
 \begin{figure}[htbp]
@@ -346,11 +391,11 @@ $\lambda$ & Parent accuracy, de & Parent accuracy, en \\
 
 Several points matter. First, explicit alignment is not required for strong cross-language retrieval. At \path{lambda_language_alignment} = 0.00, top-1 proposition retrieval is $0.9348 \pm 0.0115$ and MRR is $0.9650 \pm 0.0066$. Shared hierarchy supervision alone is therefore sufficient to induce substantial bilingual alignment in $z_{\mathrm{structure}}$.
 
-Second, light alignment is the best-supported setting in the ten-seed sweep. At \path{lambda_language_alignment} = 0.03, top-1 retrieval is $0.9365 \pm 0.0103$ and MRR is $0.9662 \pm 0.0058$. Parent, depth, and next-proposition accuracies are also among the strongest values in the sweep.
+Second, light alignment is the best-supported setting in the ten-seed sweep. At \path{lambda_language_alignment} = 0.03, top-1 retrieval is $0.9365 \pm 0.0103$ and MRR is $0.9662 \pm 0.0058$. Parent, depth, and next-proposition accuracies are also among the strongest values in the sweep: $0.8608 \pm 0.0094$, $0.9643 \pm 0.0136$, and $0.6189 \pm 0.0219$, respectively.
 
 Third, the previous single-run emphasis on \path{lambda_language_alignment} = 0.10 should be treated as superseded by the seed sweep. On average, 0.03 is better supported than 0.10, so the representative PCA plots use \texttt{align003} seed 0.
 
-Fourth, high alignment damages the model. At \path{lambda_language_alignment} = 1.00, mean top-1 retrieval falls to $0.7943 \pm 0.0188$, MRR falls to $0.8577 \pm 0.0130$, parent accuracy falls to 0.5736, depth accuracy falls to 0.7984, and next-proposition accuracy falls to 0.3614.
+Fourth, high alignment damages the model. At \path{lambda_language_alignment} = 1.00, mean top-1 retrieval falls to $0.7943 \pm 0.0188$, MRR falls to $0.8577 \pm 0.0130$, parent accuracy falls to $0.5736 \pm 0.0340$, depth accuracy falls to $0.7984 \pm 0.0415$, and next-proposition accuracy falls to $0.3614 \pm 0.0213$.
 
 The result is therefore not that more alignment is always better. The better interpretation is that $z_{\mathrm{structure}}$ needs enough shared pressure to place same-id German and English propositions in compatible regions, but not so much pressure that it collapses distinctions needed for hierarchy prediction.
 
