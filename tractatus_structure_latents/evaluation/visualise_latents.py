@@ -12,6 +12,7 @@ import torch
 
 DPI = 450
 LANGUAGE_COLORS = {"de": "#D55E00", "en": "#0072B2"}
+LANGUAGE_LABELS = {"de": "GER", "en": "ENG"}
 
 
 def set_publication_style() -> None:
@@ -79,7 +80,7 @@ def plot_language_scatter(xy, metadata: list[dict]) -> None:
             alpha=0.72,
             color=LANGUAGE_COLORS.get(language, "#666666"),
             edgecolors="none",
-            label=language,
+            label=LANGUAGE_LABELS.get(language, language),
         )
     plt.legend(title="Language", loc="best")
 
