@@ -96,6 +96,22 @@ def xs(rows: list[dict]) -> list[float]:
     return [float(row["lambda_language_alignment"]) for row in rows]
 
 
+def x_positions(rows: list[dict]) -> list[int]:
+    return list(range(len(rows)))
+
+
+def lambda_tick_labels(rows: list[dict]) -> list[str]:
+    labels: list[str] = []
+    for value in xs(rows):
+        if value == 0:
+            labels.append("0")
+        elif value < 0.1:
+            labels.append(f"{value:.2f}")
+        else:
+            labels.append(f"{value:.2f}".rstrip("0").rstrip("."))
+    return labels
+
+
 def values(rows: list[dict], metric: str) -> list[float]:
     return [float(row[metric]) for row in rows]
 
@@ -111,7 +127,7 @@ def format_axes(title: str, ylabel: str, rows: list[dict]) -> None:
     plt.title(title, pad=10)
     plt.xlabel("Language-alignment weight")
     plt.ylabel(ylabel)
-    plt.xticks(xs(rows), [f"{x:.2g}" for x in xs(rows)])
+    plt.xticks(x_positions(rows), lambda_tick_labels(rows))
     plt.grid(axis="y", alpha=0.25, linewidth=0.8)
     plt.legend(loc="best")
     plt.tight_layout()
@@ -119,15 +135,15 @@ def format_axes(title: str, ylabel: str, rows: list[dict]) -> None:
 
 def plot_lines(rows: list[dict], out: Path, title: str, ylabel: str, metrics: Iterable[tuple[str, str]], ylim: tuple[float, float] | None = None) -> None:
     set_publication_style()
-    plt.figure(figsize=(6.6, 4.2))
-    lambdas = xs(rows)
+    plt.figure(figsize=(7.0, 4.2))
+    positions = x_positions(rows)
     for i, (metric, label) in enumerate(metrics):
         y = values(rows, metric)
         std = std_values(rows, metric)
         color = COLORS[i % len(COLORS)]
         if std is not None:
             plt.errorbar(
-                lambdas,
+                positions,
                 y,
                 yerr=std,
                 marker="o",
@@ -140,7 +156,7 @@ def plot_lines(rows: list[dict], out: Path, title: str, ylabel: str, metrics: It
                 label=f"{label} (mean +/- 1 SD)",
             )
         else:
-            plt.plot(lambdas, y, marker="o", markersize=5, linewidth=1.8, color=color, label=label)
+            plt.plot(positions, y, marker="o", markersize=5, linewidth=1.8, color=color, label=label)
     if ylim is not None:
         plt.ylim(*ylim)
     format_axes(title, ylabel, rows)
@@ -162,7 +178,7 @@ def hierarchy_std(row: dict) -> float:
 
 def plot_tradeoff(rows: list[dict], out: Path) -> None:
     set_publication_style()
-    plt.figure(figsize=(5.8, 4.6))
+    plt.figure(figsize=(6.2, 4.6))
     lambdas = xs(rows)
     top1 = values(rows, "cross_language_top1_id_accuracy")
     top1_std = std_values(rows, "cross_language_top1_id_accuracy") or [0.0 for _ in rows]
@@ -170,8 +186,18 @@ def plot_tradeoff(rows: list[dict], out: Path) -> None:
     hierarchy_spread = [hierarchy_std(row) for row in rows]
     scatter = plt.scatter(hierarchy, top1, c=lambdas, s=90, cmap="viridis", edgecolor="black", linewidth=0.6, zorder=3)
     plt.errorbar(hierarchy, top1, xerr=hierarchy_spread, yerr=top1_std, fmt="none", ecolor="0.35", alpha=0.65, capsize=4, elinewidth=1.1, zorder=2)
+    label_offsets = {
+        0.00: (-22, 7),
+        0.03: (6, 6),
+        0.10: (7, -9),
+        0.30: (7, 6),
+        1.00: (7, 7),
+    }
     for row, x_value, y_value in zip(rows, hierarchy, top1):
-        plt.annotate(f"{float(row['lambda_language_alignment']):.2g}", (x_value, y_value), xytext=(5, 5), textcoords="offset points", fontsize=8)
+        lambda_value = float(row["lambda_language_alignment"])
+        offset = label_offsets.get(round(lambda_value, 2), (5, 5))
+        label = "0" if lambda_value == 0 else f"{lambda_value:.2f}".rstrip("0").rstrip(".")
+        plt.annotate(label, (x_value, y_value), xytext=offset, textcoords="offset points", fontsize=8)
     plt.colorbar(scatter, label="Language-alignment weight")
     plt.title("Retrieval-structure tradeoff (seeds 0-9)", pad=10)
     plt.xlabel("Mean structure prediction accuracy")

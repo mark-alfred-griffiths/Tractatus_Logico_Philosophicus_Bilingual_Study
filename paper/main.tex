@@ -6,6 +6,9 @@
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx}
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
 \newcommand{\url}[1]{\texttt{\detokenize{#1}}}
 \newcommand{\captiontext}[1]{\par\smallskip\noindent\begin{minipage}{0.95\linewidth}\small #1\end{minipage}\par\smallskip}
 \graphicspath{{figures/}{paper/figures/}}
@@ -144,7 +147,7 @@ Unrelated distance & 5.5574 $\pm$ 0.0532 \\
 \begin{figure}[htbp]
 \centering
 \captiontext{Figure 1. PCA projection of the 8D monolingual structure latent for representative seed 0, coloured by proposition depth. The figure is a single-seed diagnostic rather than an aggregate result, and should be read alongside Table 1.}
-\includegraphics[width=0.78\linewidth]{monolingual_latent_pca_depth_reg005_seed000.pdf}
+\includegraphics[width=0.84\linewidth]{monolingual_latent_pca_depth_reg005_seed000.pdf}
 
 \end{figure}
 
@@ -259,14 +262,14 @@ Lambda & Sibling & Parent child & Cross language parent child & Unrelated \\
 \begin{figure}[htbp]
 \centering
 \captiontext{Figure 2. Cross-language proposition retrieval across language-alignment weights. Points show means across seeds 0--9, with error bars indicating $\pm$1 SD. Top-1 measures nearest-neighbour same-ID retrieval in the opposite language; MRR measures the rank of the correct match. Retrieval is already strong at $\lambda$ = 0.00, peaks at $\lambda$ = 0.03, and declines under stronger alignment.}
-\includegraphics[width=0.78\linewidth]{bilingual_alignment_retrieval_sweep.pdf}
+\includegraphics[width=0.84\linewidth]{bilingual_alignment_retrieval_sweep.pdf}
 
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \captiontext{Figure 3. Structure-prediction accuracy across language-alignment weights. Points show means across seeds 0--9, with error bars indicating $\pm$1 SD. Depth is recovered most reliably, parent prediction remains strong at low alignment, and next-proposition prediction is the weakest structural task. Stronger alignment steadily degrades all three heads.}
-\includegraphics[width=0.78\linewidth]{bilingual_structure_accuracy_sweep.pdf}
+\includegraphics[width=0.84\linewidth]{bilingual_structure_accuracy_sweep.pdf}
 
 \end{figure}
 
@@ -287,14 +290,14 @@ Lambda & Sibling & Parent child & Cross language parent child & Unrelated \\
 \begin{figure}[htbp]
 \centering
 \captiontext{Figure 6. PCA projection of the bilingual 8-dimensional structure latent for representative $\lambda$ = 0.03, seed 0, coloured by language. German and English samples occupy the same broad regions rather than separating into language-specific clusters. This is a single-seed diagnostic and should be read alongside the ten-seed retrieval and structure-prediction metrics.}
-\includegraphics[width=0.78\linewidth]{bilingual_latent_pca_language_align003_seed000.pdf}
+\includegraphics[width=0.84\linewidth]{bilingual_latent_pca_language_align003_seed000.pdf}
 
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \captiontext{Figure 7. PCA projection of the bilingual 8-dimensional structure latent for representative $\lambda$ = 0.03, seed 0, coloured by Tractatus hierarchy depth. The visible depth gradient indicates hierarchy-relevant organisation within the shared bilingual space. As with the other PCA figures, this is a single-seed visual diagnostic rather than aggregate evidence.}
-\includegraphics[width=0.78\linewidth]{bilingual_latent_pca_depth_align003_seed000.pdf}
+\includegraphics[width=0.84\linewidth]{bilingual_latent_pca_depth_align003_seed000.pdf}
 
 \end{figure}
 

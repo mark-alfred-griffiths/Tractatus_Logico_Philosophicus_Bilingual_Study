@@ -29,23 +29,23 @@ def generate_metric_figures(seed_sweep_dir: Path, out_dir: Path, summary_out: Pa
     plot_lines(
         rows,
         out_dir / "bilingual_alignment_retrieval_sweep.png",
-        "Bilingual Alignment Retrieval Sweep (seeds 0-9)",
-        "retrieval metric",
+        "Cross-language retrieval across alignment weights (seeds 0-9)",
+        "Retrieval metric",
         [
-            ("cross_language_top1_id_accuracy", "top-1 id accuracy"),
+            ("cross_language_top1_id_accuracy", "Top-1 ID accuracy"),
             ("cross_language_mrr", "MRR"),
         ],
-        ylim=(0.75, 1.0),
+        ylim=(0.7, 1.0),
     )
     plot_lines(
         rows,
         out_dir / "bilingual_structure_accuracy_sweep.png",
-        "Structure Prediction Across Alignment Strengths (seeds 0-9)",
-        "accuracy",
+        "Structure prediction across alignment weights (seeds 0-9)",
+        "Accuracy",
         [
-            ("parent_accuracy", "parent"),
-            ("depth_accuracy", "depth"),
-            ("next_accuracy", "next"),
+            ("parent_accuracy", "Parent"),
+            ("depth_accuracy", "Depth"),
+            ("next_accuracy", "Next"),
         ],
         ylim=(0.3, 1.0),
     )
@@ -53,11 +53,11 @@ def generate_metric_figures(seed_sweep_dir: Path, out_dir: Path, summary_out: Pa
     plot_lines(
         rows,
         out_dir / "bilingual_reconstruction_sweep.png",
-        "Bilingual Reconstruction Across Alignment Strengths (seeds 0-9)",
-        "loss / perplexity",
+        "Reconstruction across alignment weights (seeds 0-9)",
+        "Loss / perplexity",
         [
-            ("reconstruction_loss", "reconstruction loss"),
-            ("perplexity", "perplexity"),
+            ("reconstruction_loss", "Reconstruction loss"),
+            ("perplexity", "Perplexity"),
         ],
     )
     if summary_out is not None:
