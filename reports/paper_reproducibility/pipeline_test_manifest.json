@@ -1,0 +1,27 @@
+{
+  "commands_tested": [
+    "PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep runs/seed_sweeps/monolingual_split_24_8_reg005 --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison",
+    "PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison",
+    "PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 -m tractatus_structure_latents.evaluation.generate_paper_figures --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 --representative-alignment align003 --representative-seed 0 --out-dir paper/figures --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json --family-distance-data paper/figures/family_case_distance_matrix_data.csv",
+    "PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py --metrics --figures --skip-checkpoints --out-dir reports/paper_reproducibility/reproduced",
+    "PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py",
+    "PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py"
+  ],
+  "docs_with_old_stage_refs": [],
+  "docs_with_unsafe_report_commands": [],
+  "documentation_files_checked": 9,
+  "empirical_audit_report": "reports/empirical_audit/report_for_chatgpt.md",
+  "figure_manifest_failures": 0,
+  "figure_manifest_rows": 7,
+  "metric_family_counts": {
+    "Euclidean": 72,
+    "Jaccard": 16,
+    "TF-IDF": 4,
+    "same-ID retrieval": 6,
+    "supporting metric": 3
+  },
+  "reproduced_paper_value_checks": 101,
+  "reproduced_paper_value_mismatches": 0,
+  "source_artifacts_with_stage_refs": 0
+}

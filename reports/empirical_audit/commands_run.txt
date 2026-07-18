@@ -1,0 +1,4 @@
+git status --short
+mkdir -p reports/empirical_audit
+PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py

@@ -1,0 +1,181 @@
+{
+  "audit": {
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 20260717,
+    "config_comparison": {
+      "align000": {
+        "lambda_language_alignment": 0.0,
+        "non_lambda_differences_from_align000": []
+      },
+      "align003": {
+        "lambda_language_alignment": 0.03,
+        "non_lambda_differences_from_align000": []
+      },
+      "align010": {
+        "lambda_language_alignment": 0.1,
+        "non_lambda_differences_from_align000": []
+      },
+      "align030": {
+        "lambda_language_alignment": 0.3,
+        "non_lambda_differences_from_align000": []
+      },
+      "align100": {
+        "lambda_language_alignment": 1.0,
+        "non_lambda_differences_from_align000": []
+      }
+    },
+    "outputs": {
+      "child_count_distribution.csv": {
+        "bytes": 3073,
+        "sha256": "fde2d1a7f35dcfb410c0e91671b4f52fbfa068ceb4ce1e4efa617020cb4059eb"
+      },
+      "child_count_seed_metrics.csv": {
+        "bytes": 40125,
+        "sha256": "ec001cab11aced504e059509259726f1ea61b6fb6ba3045e3e3d1799ed168920"
+      },
+      "commands_run.txt": {
+        "bytes": 187,
+        "sha256": "0ea89de0ee5d7b2898571b370804f4e7caf9e5360ef8b9ba585e8fb2271cf9c8"
+      },
+      "lambda_000_vs_003_paired.csv": {
+        "bytes": 8053,
+        "sha256": "10b0aa48b8e3aee53c111219951d45467543e40553354ee922898c2b36f5b86e"
+      },
+      "lambda_000_vs_003_summary.csv": {
+        "bytes": 3125,
+        "sha256": "0d80d7347dcb271b98f3f9608cee2164759281add7c6869e55ed10da6a5c86b0"
+      },
+      "latent_scale_variance_by_seed.csv": {
+        "bytes": 9725,
+        "sha256": "a37c04f004a07d9394b02f5204c84507f8fb6f991076b3891319d386c6373b9f"
+      },
+      "recomputed_vs_published.csv": {
+        "bytes": 48737,
+        "sha256": "60a2fc93dc94f79de3238fe2d4890ba2fde533f6119ecda29ed8d44af75114cf"
+      },
+      "report_for_chatgpt.md": {
+        "bytes": 17494,
+        "sha256": "df32d9d38071b9abfbab2bee05eeb802b1617ba8d01c0af406449e9febf23002"
+      },
+      "same_id_distance_by_seed.csv": {
+        "bytes": 8527,
+        "sha256": "1c0002f14a68bcba2dabb529e74e5fc27a445f95b9cb8cd89aad9c2e65c05988"
+      }
+    },
+    "source_citations": {
+      "alignment_added": "tractatus_structure_latents/training/train_vae.py:271",
+      "alignment_loss": "tractatus_structure_latents/training/train_vae.py:119",
+      "alignment_return": "tractatus_structure_latents/training/train_vae.py:140",
+      "child_head": "tractatus_structure_latents/models/vae.py:106",
+      "child_loss": "tractatus_structure_latents/models/vae.py:200",
+      "child_target": "tractatus_structure_latents/training/data.py:124",
+      "eval_latents": "tractatus_structure_latents/evaluation/evaluate_structure.py:212",
+      "lambda_defaults": "tractatus_structure_latents/scripts/run_bilingual_alignment_seed_sweep.py:89",
+      "lambda_tag": "tractatus_structure_latents/scripts/run_bilingual_alignment_seed_sweep.py:9",
+      "manifest": "tractatus_structure_latents/scripts/run_bilingual_alignment_seed_sweep.py:28",
+      "metric_keys": "tractatus_structure_latents/evaluation/evaluate_structure.py:250",
+      "pca_single_seed": "tractatus_structure_latents/evaluation/generate_paper_figures.py:70",
+      "relation_distances": "tractatus_structure_latents/evaluation/evaluate_structure.py:229",
+      "reparameterize_eval": "tractatus_structure_latents/models/vae.py:111",
+      "retrieval_distance": "tractatus_structure_latents/evaluation/evaluate_structure.py:82",
+      "retrieval_rank": "tractatus_structure_latents/evaluation/evaluate_structure.py:85",
+      "same_id": "tractatus_structure_latents/evaluation/evaluate_structure.py:50",
+      "same_id_distance": "tractatus_structure_latents/evaluation/evaluate_structure.py:74",
+      "set_seed": "tractatus_structure_latents/training/train_vae.py:25",
+      "split_forward": "tractatus_structure_latents/models/vae.py:127",
+      "sweep_summary": "tractatus_structure_latents/evaluation/plot_bilingual_alignment_sweep.py:61"
+    },
+    "studies": [
+      {
+        "lambda_language_alignment": 0.0,
+        "path": "runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000",
+        "tag": "align000"
+      },
+      {
+        "lambda_language_alignment": 0.03,
+        "path": "runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003",
+        "tag": "align003"
+      },
+      {
+        "lambda_language_alignment": 0.1,
+        "path": "runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010",
+        "tag": "align010"
+      },
+      {
+        "lambda_language_alignment": 0.3,
+        "path": "runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030",
+        "tag": "align030"
+      },
+      {
+        "lambda_language_alignment": 1.0,
+        "path": "runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100",
+        "tag": "align100"
+      }
+    ]
+  },
+  "repository": {
+    "branch": "empirical-audit",
+    "commit": "633da4d77d374ef1bb404019497c1787ebe0d9c6",
+    "status_short": [
+      "M README.md",
+      " M docs/DOCUMENTATION.md",
+      " M docs/experiments.md",
+      " M docs/reproduction.md",
+      " M docs/results.md",
+      " M paper/PAPER.md",
+      " D paper/archive/tractatus_bilingual_latent_structure_paper.txt",
+      " D paper/archive/tractatus_latent_logic_paper.txt",
+      " M paper/bilingual_results_summary.txt",
+      "D  paper/bilingual_structure_latents_in_the_tractatus.pdf",
+      " M paper/figures/bilingual_alignment_retrieval_sweep.pdf",
+      " M paper/figures/bilingual_latent_pca_depth_align003_seed000.pdf",
+      " M paper/figures/bilingual_latent_pca_language_align003_seed000.pdf",
+      " M paper/figures/bilingual_reconstruction_sweep.pdf",
+      " M paper/figures/bilingual_retrieval_structure_tradeoff.pdf",
+      " M paper/figures/bilingual_structure_accuracy_sweep.pdf",
+      " M paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf",
+      " M paper/main.tex",
+      " M paper/monolingual_results_summary.txt",
+      " M paper/references.bib",
+      " M runs/RUN_ARTIFACTS.md",
+      " M runs/seed_sweeps/SEED_SWEEPS.md",
+      " M runs/seed_sweeps/monolingual_split_24_8_reg005/manifest.json",
+      " M tractatus_structure_latents/evaluation/generate_paper_figures.py",
+      "?? .idea/",
+      "?? docs/canonical_paper_reproducibility_commands.md",
+      "?? paper/bilingual_structure_latents_in_the_tractatus.pdf",
+      "?? paper/figures/family_case_distance_matrix.pdf",
+      "?? paper/figures/family_case_distance_matrix.png",
+      "?? paper/figures/family_case_distance_matrix_data.csv",
+      "?? reports/",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/summaries/per_seed_metrics.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/summaries/seed_metric_trends.png",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/summaries/summary.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/summaries/summary.json",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000/summaries/summary.md",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/per_seed_metrics.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/seed_metric_trends.png",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/summary.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/summary.json",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/summary.md",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/per_seed_metrics.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/seed_metric_trends.png",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/summary.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/summary.json",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010/summaries/summary.md",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/summaries/per_seed_metrics.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/summaries/seed_metric_trends.png",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/summaries/summary.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/summaries/summary.json",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030/summaries/summary.md",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/summaries/per_seed_metrics.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/summaries/seed_metric_trends.png",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/summaries/summary.csv",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/summaries/summary.json",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100/summaries/summary.md",
+      "?? runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison/",
+      "?? tests/",
+      "?? tools/"
+    ]
+  }
+}

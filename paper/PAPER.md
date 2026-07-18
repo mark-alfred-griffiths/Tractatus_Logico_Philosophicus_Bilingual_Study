@@ -2,6 +2,43 @@
 
 This folder contains the plain-text paper files and generated figures for the Tractatus structure-latents work.
 
+## Current Paper Source
+
+The current paper source is `paper/main.tex` with bibliography
+`paper/references.bib`. The paper uses the retained empirical outputs. Use the
+complete canonical pipeline to regenerate
+paper-facing summaries, all figures, and the TF-IDF/Jaccard/Euclidean audit
+statistics without retraining:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
+  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
+  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --representative-alignment align003 \
+  --representative-seed 0 \
+  --out-dir paper/figures \
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+
+PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+```
+
 Main text files:
 
 ```text
@@ -28,7 +65,8 @@ python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
 ```
 
 Metric sweep figures show means across seeds `0..9` with +/- one-standard-deviation error bars.
@@ -47,6 +85,14 @@ paper/figures/bilingual_alignment_retrieval_sweep.png
 paper/figures/bilingual_structure_accuracy_sweep.png
 paper/figures/bilingual_retrieval_structure_tradeoff.png
 paper/figures/bilingual_reconstruction_sweep.png
+```
+
+## Generated Family Figure
+
+```text
+paper/figures/family_case_distance_matrix.png
+paper/figures/family_case_distance_matrix.pdf
+paper/figures/family_case_distance_matrix_data.csv
 ```
 
 ## Generated Representative PCA Figures
