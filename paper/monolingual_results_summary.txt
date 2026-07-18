@@ -1,73 +1,68 @@
 Monolingual Results Summary: English Split-Latent Tractatus Study
 
-This file is a short retained summary of the English-only split-latent study. It
-is supporting material for the canonical paper:
+Canonical paper state
+---------------------
+This summary was regenerated for the canonical paper from retained artefacts. It
+summarises the English-only split-latent configuration and proposition-family
+diagnostics.
 
-    paper/bilingual_structure_latents_in_the_tractatus.txt
+Canonical inputs
+----------------
+- runs/seed_sweeps/monolingual_split_24_8_reg005/metrics/seed*.metrics.json
+- runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/summary.json
+- reports/empirical_audit/child_count_seed_metrics.csv
+- reports/empirical_audit/child_count_distribution.csv
+- reports/paper_reproducibility/reproduced/reproduced_euclidean_distances.csv
+- paper/figures/family_case_distance_matrix_data.csv
 
-The canonical monolingual run is the balanced English split-latent configuration
-repeated across ten seeds:
+Model and retained sweep
+------------------------
+- z_text: 24 dimensions
+- z_structure: 8 dimensions
+- beta_text: 0.01
+- beta_structure: 0.05
+- seeds: 0..9
+- dataset: tractatus_structure_latents/data/tractatus.json
 
-    runs/seed_sweeps/monolingual_split_24_8_reg005/
+Core ten-seed summary
+---------------------
+parent accuracy:       0.6983+/-0.0152
+depth accuracy:        0.9274+/-0.0275
+next accuracy:         0.3724+/-0.0198
+child-count MAE:       0.5181+/-0.0319
+child-count RMSE:      0.7601+/-0.0468
+reconstruction loss:   1.2923+/-0.0194
+perplexity:            3.6416+/-0.0706
+KL structure:          8.9653+/-0.1127
+sibling distance:      2.0656+/-0.0342
+parent-child distance: 6.1065+/-0.1566
+unrelated distance:    5.5574+/-0.0532
 
-Dataset:
+Task reference levels
+---------------------
+parent classes:        169 observed, majority reference 0.0266
+depth classes:         6 observed, majority reference 0.4658
+successor classes:     526 observed, random Top-1 reference 0.0019
+child-count zero rate: 0.6806, constant-zero MAE 0.9867
 
-    tractatus_structure_latents/data/tractatus.json
+Proposition-family diagnostics
+------------------------------
+family 2.2 mean pairwise distance: 2.5324+/-0.4181
+matched-random mean distance:      5.2159
+matched-null percentile mean:      0.0000
+family 2.2 outlier seed count:     10/10
+Figure 7 source data:              paper/figures/family_case_distance_matrix_data.csv
 
-Model:
+Canonical figure artifacts
+--------------------------
+- paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
+- paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf
+- paper/figures/family_case_distance_matrix.png
+- paper/figures/family_case_distance_matrix.pdf
+- paper/figures/family_case_distance_matrix_data.csv
 
-    z_text:        24 dimensions
-    z_structure:   8 dimensions
-    beta_text:     0.01
-    beta_structure: 0.05
-    seeds:         0..9
-
-Purpose:
-
-    The English-only study tests whether the Tractatus numbering system can be
-    used as weak supervision for learning a compact latent representation of
-    formal proposition position. The split-latent design separates text
-    reconstruction from hierarchy prediction, making the 8-dimensional
-    z_structure subspace interpretable as the structural channel.
-
-Current ten-seed summary:
-
-    parent accuracy:       0.6983 +/- 0.0152
-    depth accuracy:        0.9274 +/- 0.0275
-    next accuracy:         0.3724 +/- 0.0198
-    reconstruction loss:   1.2923 +/- 0.0194
-    perplexity:            3.6416 +/- 0.0706
-    KL structure:          8.9653 +/- 0.1127
-    sibling distance:      2.0656 +/- 0.0342
-    parent-child distance: 6.1065 +/- 0.1566
-    unrelated distance:    5.5574 +/- 0.0532
-
-Interpretation:
-
-    The split-latent model learns a structure subspace that carries hierarchy
-    information from the Tractatus numbering system. Depth prediction is strong,
-    parent prediction is useful, and next-proposition prediction remains the
-    hardest structural target. The latent distance metrics support the same
-    interpretation: sibling propositions are much closer to each other than
-    unrelated propositions in z_structure.
-
-What this result does not show:
-
-    It does not show that the model understands Wittgenstein. It does not show
-    unsupervised discovery of the hierarchy from raw text alone. The hierarchy is
-    supplied as weak supervision through parent, depth, next, and child-count
-    targets. The result is narrower: a compact 8-dimensional structure latent can
-    represent formal proposition position when separated from the text
-    reconstruction latent.
-
-Canonical representative figure:
-
-    paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
-    paper/figures/monolingual_latent_pca_depth_reg005_seed000.pdf
-
-Canonical summaries:
-
-    runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/summary.json
-    runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/summary.csv
-    runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/summary.md
-    runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/per_seed_metrics.csv
+Interpretation guardrail
+------------------------
+These are retained-corpus diagnostics. The model uses numbering-derived targets
+as supervision, so the result is not unsupervised discovery of the Tractatus
+hierarchy and not a model interpretation of Wittgenstein.

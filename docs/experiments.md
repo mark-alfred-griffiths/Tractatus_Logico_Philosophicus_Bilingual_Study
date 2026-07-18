@@ -51,11 +51,56 @@ Metric sweep figures are generated as means across seeds `0..9` with +/- one-sta
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
 ```
+
+## Canonical Reproducibility Audit
+
+The canonical paper keeps the retained trained models fixed. Regenerating paper
+outputs means aggregating retained `seed*.metrics.json` files, regenerating
+figures, refreshing derived TF-IDF/Jaccard/Euclidean statistics, and rebuilding
+the human-readable summaries. It does not run optimisation or retrain.
+
+Complete canonical paper-output regeneration:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
+  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
+  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --representative-alignment align003 \
+  --representative-seed 0 \
+  --out-dir paper/figures \
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+
+PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+```
+
+This regenerates summary artefacts under `runs/seed_sweeps/*/summaries/`, all
+paper figures including the Figure 7 family 2.2 Euclidean distance matrix,
+paper audit CSV/JSON statistics under `reports/`, and
+`paper/monolingual_results_summary.txt` plus
+`paper/bilingual_results_summary.txt`.
 
 ## Non-Canonical Historical Directions
 

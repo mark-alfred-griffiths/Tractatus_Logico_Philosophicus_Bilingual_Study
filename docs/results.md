@@ -72,9 +72,18 @@ paper/figures/bilingual_reconstruction_sweep.png
 Representative PCA figures are seed-labeled:
 
 ```text
-paper/figures/bilingual_latent_pca_language_align010_seed000.png
-paper/figures/bilingual_latent_pca_depth_align010_seed000.png
+paper/figures/bilingual_latent_pca_language_align003_seed000.png
+paper/figures/bilingual_latent_pca_depth_align003_seed000.png
 paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
+```
+
+The paper also includes the family 2.2 Euclidean distance matrix and its source
+data:
+
+```text
+paper/figures/family_case_distance_matrix.png
+paper/figures/family_case_distance_matrix.pdf
+paper/figures/family_case_distance_matrix_data.csv
 ```
 
 Regenerate all canonical figures with:
@@ -83,11 +92,55 @@ Regenerate all canonical figures with:
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
 ```
+
+## Complete Canonical Results Regeneration
+
+The paper reports exact-input TF-IDF and Jaccard retrieval baselines, wider
+neighbourhood Jaccard, same-ID and relation Euclidean distances, and the family
+2.2 Euclidean distance matrix for Figure 7. Regenerate the complete current
+results layer without retraining with the pipeline in `docs/reproduction.md`:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
+  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
+  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --representative-alignment align003 \
+  --representative-seed 0 \
+  --out-dir paper/figures \
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+
+PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+```
+
+The generated `reproduced_values_vs_paper.csv` records the paper value,
+reproduced value, source artefact, and rounded match status for every checked
+TF-IDF, Jaccard, and Euclidean-distance value. The summary writer rebuilds
+`paper/monolingual_results_summary.txt` and
+`paper/bilingual_results_summary.txt`. These are retained-corpus diagnostics,
+not held-out generalisation results.
 
 ## Interpretation Guardrail
 

@@ -1,0 +1,10 @@
+file,old_stage_reference_present,canonical_reproduction_command_present,summary_writer_present,empirical_audit_present,figure7_present,bytecode_safe_report_commands,unsafe_command_lines,no_retraining_present
+README.md,no,yes,yes,yes,yes,yes,,yes
+docs/DOCUMENTATION.md,no,yes,yes,yes,yes,yes,,yes
+docs/reproduction.md,no,yes,yes,yes,yes,yes,,yes
+docs/results.md,no,yes,yes,no,yes,yes,,yes
+docs/experiments.md,no,yes,yes,no,yes,yes,,no
+docs/canonical_paper_reproducibility_commands.md,no,yes,yes,yes,yes,yes,,yes
+paper/PAPER.md,no,yes,yes,no,yes,yes,,yes
+runs/RUN_ARTIFACTS.md,no,yes,yes,no,yes,yes,,no
+runs/seed_sweeps/SEED_SWEEPS.md,no,yes,yes,no,yes,yes,,yes

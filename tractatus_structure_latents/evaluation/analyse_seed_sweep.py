@@ -107,7 +107,7 @@ def write_per_seed_csv(rows: list[dict[str, Any]], out: Path) -> None:
     metric_names = sorted({name for row in rows for name in row["flat"]})
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["seed", *metric_names])
+        writer = csv.DictWriter(handle, fieldnames=["seed", *metric_names], lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({"seed": row["seed"], **row["flat"]})
@@ -116,7 +116,11 @@ def write_per_seed_csv(rows: list[dict[str, Any]], out: Path) -> None:
 def write_summary_csv(summary: dict[str, Any], out: Path) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=["metric", "count", "mean", "std", "min", "max"])
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=["metric", "count", "mean", "std", "min", "max"],
+            lineterminator="\n",
+        )
         writer.writeheader()
         for metric, stats in sorted(summary["metrics"].items()):
             writer.writerow({"metric": metric, **stats})

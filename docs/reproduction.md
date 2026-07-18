@@ -97,16 +97,112 @@ python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
   --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
 ```
 
-## 6. Generate Paper Figures
+## 6. Generate Canonical Sweep Figures
 
 ```bash
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
   --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align010 \
+  --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
 ```
 
-Metric sweep figures show means across seeds `0..9` with +/- one-standard-deviation error bars. PCA figures use representative seed `0` and include seed labels in titles and filenames.
+Metric sweep figures show means across seeds `0..9` with +/- one-standard-deviation error bars. PCA figures use representative seed `0` and include seed labels in titles and filenames. The command also regenerates the family 2.2 / Figure 7 Euclidean distance matrix from retained figure data.
+
+## 7. Complete Canonical Paper-Output Pipeline
+
+Run this sequence to regenerate the complete current paper-output layer from
+retained artefacts. It refreshes summary artefacts under
+`runs/seed_sweeps/*/summaries/`, all paper figures, paper metric/statistic
+CSVs, and the human-readable paper summaries. It does not retrain models or
+modify checkpoints, cached latents, or `seed*.metrics.json`.
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
+  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
+  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --representative-alignment align003 \
+  --representative-seed 0 \
+  --out-dir paper/figures \
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+
+PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+```
+
+The final command writes:
+
+```text
+paper/monolingual_results_summary.txt
+paper/bilingual_results_summary.txt
+```
+
+## 8. Reproduce Paper Values And Figures For Audit Only
+
+The manuscript uses the retained experiments above. Do not retrain the
+published sweeps to reproduce the paper values. Instead, reproduce the reported
+TF-IDF, Jaccard, Euclidean-distance, same-ID, relation-distance, and Figure 7
+source values with:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics \
+  --figures \
+  --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+```
+
+Outputs include:
+
+```text
+reports/paper_reproducibility/reproduced/reproduced_tfidf_values.csv
+reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv
+reports/paper_reproducibility/reproduced/reproduced_euclidean_distances.csv
+reports/paper_reproducibility/reproduced/reproduced_values_vs_paper.csv
+reports/paper_reproducibility/reproduced/reproduced_figure_manifest.csv
+reports/paper_reproducibility/reproduced/figures/family_case_distance_matrix_data.csv
+```
+
+The script writes under the requested output directory and does not modify
+`runs/`, `paper/main.tex`, `paper/references.bib`, PDFs, or canonical paper
+figure files.
+
+## 9. Optional Empirical Audit
+
+For a deeper audit of the retained experiments, including alignment-loss
+definitions, same-ID distance, paired lambda comparisons, latent scale/variance,
+and child-count diagnostics, run:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py
+```
+
+This audit writes machine-readable outputs and a Markdown report under:
+
+```text
+reports/empirical_audit/
+```
+
+It is not part of the routine paper-output regeneration path. It loads retained
+artefacts and checkpoints for verification only; it does not retrain models or
+modify canonical experiment outputs.
