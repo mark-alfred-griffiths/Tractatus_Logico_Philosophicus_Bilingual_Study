@@ -118,5 +118,59 @@ python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
   --representative-alignment align003 \
   --representative-seed 0 \
   --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
 ```
+
+## Derived Metrics And Figure 7
+
+The canonical paper also reports exact-input lexical baselines, neighbourhood
+Jaccard, same-ID and relation Euclidean distances, and the family 2.2 Figure 7
+distance matrix. These are derived from retained outputs and audit artefacts;
+they are reproduced for audit-only validation without changing `runs/` by:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+```
+
+## Complete Canonical Paper-Output Pipeline
+
+To regenerate the current paper-output layer without retraining, refresh
+summaries from retained seed metrics, regenerate all paper figures including
+Figure 7, reproduce TF-IDF, Jaccard, Euclidean, and other
+metric/statistic CSVs, and rebuild the paper summary text files:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
+  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
+  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
+
+PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
+  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
+  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
+  --representative-alignment align003 \
+  --representative-seed 0 \
+  --out-dir paper/figures \
+  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
+  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+
+PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
+  --metrics --figures --skip-checkpoints \
+  --out-dir reports/paper_reproducibility/reproduced
+
+PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+```
+
+This pipeline may create or update files under `runs/seed_sweeps/*/summaries/`
+only. It must not rewrite checkpoints, cached latents, or retained
+`seed*.metrics.json` files.
