@@ -1,0 +1,22 @@
+{
+  "family_size_range": [
+    4,
+    10
+  ],
+  "family_stability_requirement": "principal direction versus matched actual families in at least 8 of 10 seeds",
+  "hierarchy_sequence_threshold": {
+    "note": "The poor-successor threshold is less stringent than a decile because the decile rule produced no stable parent-good/successor-poor candidates.",
+    "parent_good_quantile": 0.1,
+    "parent_poor_quantile": 0.9,
+    "stability": "at least 8 of 10 seeds",
+    "successor_good_quantile": 0.1,
+    "successor_poor_quantile": 0.65
+  },
+  "neighbourhood_stability_requirement": "lowest/highest decile k=10 cross-direction Jaccard in at least 8 of 10 seeds",
+  "primary_representation": "paired_full_model_align000",
+  "robustness_labels": [
+    "paired_full_model_align003",
+    "paired_no_successor_align000"
+  ],
+  "text_blind_columns": "IDs, numeric latent diagnostics, and formal/length metadata only; wording joined after SHA-256 freeze"
+}

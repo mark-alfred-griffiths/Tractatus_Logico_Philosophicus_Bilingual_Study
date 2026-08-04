@@ -1,0 +1,90 @@
+# Phase 4 Verification Report
+
+- All required Phase 4 report, manifest and data deliverables are present.
+- Pre-text manifest contains no proposition wording columns.
+- Pre-text manifest hash and freeze-before-join timestamps verify.
+- Selected-case raw outputs retain required posterior, rank, logit, neighbour, lexical, length and formal fields.
+- One dossier exists for every selected manifest row.
+- No tracked diffs touch manuscript files or canonical run outputs.
+- Git branch: hold-out-and-ablation.
+- Git commit during verification: aae7010d05bdfbbc36d510564bcb856728964f5f.
+
+## Git status
+
+```
+A  results/dsh_validation/phase4_case_studies/candidate_manifest_pre_text.csv
+A  results/dsh_validation/phase4_case_studies/candidate_manifest_pre_text.sha256
+A  results/dsh_validation/phase4_case_studies/candidate_manifest_with_text.csv
+A  results/dsh_validation/phase4_case_studies/data/case_selection_config.json
+A  results/dsh_validation/phase4_case_studies/data/family_candidate_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/family_matched_controls.csv
+A  results/dsh_validation/phase4_case_studies/data/family_member_texts.csv
+A  results/dsh_validation/phase4_case_studies/data/family_seed_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/hierarchy_sequence_candidate_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/hierarchy_sequence_seed_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/manifest_freeze.json
+A  results/dsh_validation/phase4_case_studies/data/neighbourhood_candidate_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/neighbourhood_seed_metrics.csv
+A  results/dsh_validation/phase4_case_studies/data/selected_case_raw_outputs.parquet
+AM results/dsh_validation/phase4_case_studies/dossiers/01_A_formally_controlled_family_differentiation_unusually_strong_cohesion.md
+AM results/dsh_validation/phase4_case_studies/dossiers/02_A_formally_controlled_family_differentiation_unusually_strong_internal_differentiation.md
+AM results/dsh_validation/phase4_case_studies/dossiers/03_A_formally_controlled_family_differentiation_typical_matched_control_family.md
+AM results/dsh_validation/phase4_case_studies/dossiers/04_B_bilingual_neighbourhood_divergence_stable_low_overlap.md
+AM results/dsh_validation/phase4_case_studies/dossiers/05_B_bilingual_neighbourhood_divergence_stable_low_overlap.md
+AM results/dsh_validation/phase4_case_studies/dossiers/06_B_bilingual_neighbourhood_divergence_stable_high_overlap_control.md
+AM results/dsh_validation/phase4_case_studies/dossiers/07_B_bilingual_neighbourhood_divergence_stable_high_overlap_control.md
+AM results/dsh_validation/phase4_case_studies/dossiers/08_C_hierarchy_sequence_tension_confident_parent_poor_successor.md
+AM results/dsh_validation/phase4_case_studies/dossiers/09_C_hierarchy_sequence_tension_strong_successor_weak_parent.md
+AM results/dsh_validation/phase4_case_studies/dossiers/10_C_hierarchy_sequence_tension_ordinary_control.md
+A  results/dsh_validation/phase4_case_studies/figures/01_A_formally_controlled_family_differentiation_unusually_strong_cohesion_3_31_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/02_A_formally_controlled_family_differentiation_unusually_strong_internal_differentiation_5_5_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/03_A_formally_controlled_family_differentiation_typical_matched_control_family_5_63_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/04_B_bilingual_neighbourhood_divergence_stable_low_overlap_4_31_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/05_B_bilingual_neighbourhood_divergence_stable_low_overlap_4_431_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/06_B_bilingual_neighbourhood_divergence_stable_high_overlap_control_2_13_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/07_B_bilingual_neighbourhood_divergence_stable_high_overlap_control_2_19_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/08_C_hierarchy_sequence_tension_confident_parent_poor_successor_5_524_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/09_C_hierarchy_sequence_tension_strong_successor_weak_parent_6_241_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/figures/10_C_hierarchy_sequence_tension_ordinary_control_5_64_same_id_distance_by_seed.png
+A  results/dsh_validation/phase4_case_studies/phase4_case_selection_protocol.md
+AM results/dsh_validation/phase4_case_studies/phase4_case_studies_report.md
+A  results/dsh_validation/phase4_case_studies/phase4_commands.sh
+A  results/dsh_validation/phase4_case_studies/phase4_robustness_summary.csv
+A  results/dsh_validation/phase4_case_studies/phase4_verification_report.md
+A  tools/phase4_case_studies.py
+?? .idea/
+?? results/dsh_validation/phase1_ablations/checkpoints/
+?? results/dsh_validation/phase1_ablations/smoke/
+?? results/dsh_validation/phase2_family_holdout/checkpoints/
+?? results/dsh_validation/phase2_family_holdout/smoke/
+?? results/dsh_validation/phase3_controlled_alignment/checkpoints/
+?? results/dsh_validation/phase3_controlled_alignment/raw/
+?? results/dsh_validation/phase3_controlled_alignment/smoke/
+?? results/dsh_validation/phase4_case_studies/figures/A_formally_controlled_family_differentiation_typical_matched_control_family_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/A_formally_controlled_family_differentiation_unusually_strong_cohesion_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/A_formally_controlled_family_differentiation_unusually_strong_internal_differentiation_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/B_bilingual_neighbourhood_divergence_stable_high_overlap_control_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/B_bilingual_neighbourhood_divergence_stable_low_overlap_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/C_hierarchy_sequence_tension_confident_parent_poor_successor_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/C_hierarchy_sequence_tension_ordinary_control_same_id_distance_by_seed.png
+?? results/dsh_validation/phase4_case_studies/figures/C_hierarchy_sequence_tension_strong_successor_weak_parent_same_id_distance_by_seed.png
+?? tests/__pycache__/
+?? tools/__pycache__/
+```
+
+## Git diff stat
+
+```
+...rmally_controlled_family_differentiation_unusually_strong_cohesion.md | 1 -
+ ...d_family_differentiation_unusually_strong_internal_differentiation.md | 1 -
+ ...y_controlled_family_differentiation_typical_matched_control_family.md | 1 -
+ .../04_B_bilingual_neighbourhood_divergence_stable_low_overlap.md        | 1 -
+ .../05_B_bilingual_neighbourhood_divergence_stable_low_overlap.md        | 1 -
+ ...6_B_bilingual_neighbourhood_divergence_stable_high_overlap_control.md | 1 -
+ ...7_B_bilingual_neighbourhood_divergence_stable_high_overlap_control.md | 1 -
+ .../08_C_hierarchy_sequence_tension_confident_parent_poor_successor.md   | 1 -
+ .../09_C_hierarchy_sequence_tension_strong_successor_weak_parent.md      | 1 -
+ .../dossiers/10_C_hierarchy_sequence_tension_ordinary_control.md         | 1 -
+ results/dsh_validation/phase4_case_studies/phase4_case_studies_report.md | 1 -
+ 11 files changed, 11 deletions(-)
+```
