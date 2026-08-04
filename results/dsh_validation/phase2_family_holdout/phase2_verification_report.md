@@ -24,28 +24,22 @@
 - Fold manifest rows: 526.
 - Raw per-proposition rows: 9468.
 - Git branch: hold-out-and-ablation.
-- Git commit during verification: 4d46c626c57c51b7b7a7049e8ba288d73f6bade8.
+- Git commit during verification: b212a4239d41cbf955a71b46df73ae6b21fba2d7.
 
 ## Git status
 
 ```
-M tractatus_structure_latents/training/__pycache__/train_vae.cpython-310.pyc
- M tractatus_structure_latents/training/data.py
- M tractatus_structure_latents/training/train_vae.py
 ?? .idea/
 ?? results/dsh_validation/phase1_ablations/checkpoints/
 ?? results/dsh_validation/phase1_ablations/smoke/
-?? results/dsh_validation/phase2_family_holdout/
+?? results/dsh_validation/phase2_family_holdout/checkpoints/
+?? results/dsh_validation/phase2_family_holdout/smoke/
 ?? tests/__pycache__/
 ?? tools/__pycache__/
-?? tools/phase2_family_holdout.py
 ```
 
 ## Git diff stat
 
 ```
-.../training/__pycache__/train_vae.cpython-310.pyc  | Bin 11040 -> 11893 bytes
- tractatus_structure_latents/training/data.py        |   4 ++++
- tractatus_structure_latents/training/train_vae.py   |  11 +++++++++++
- 3 files changed, 15 insertions(+)
+
 ```
