@@ -14,6 +14,8 @@ from tractatus_structure_latents.training.data import TractatusDataset, Vocabula
 
 
 def resolve_device(requested: str) -> torch.device:
+    if requested == "gpu":
+        requested = "cuda"
     if requested == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device(requested)
@@ -70,6 +72,8 @@ def checkpoint_payload(
         "lambda_language_alignment": args.lambda_language_alignment,
         "formal_target_shuffle_seed": args.formal_target_shuffle_seed,
         "formal_target_shuffle_fields": args.formal_target_shuffle_fields,
+        "sample_ids_file": str(args.sample_ids_file) if args.sample_ids_file else None,
+        "sample_ids_count": len(dataset.sample_ids) if dataset.sample_ids is not None else None,
         "seed": args.seed,
     }
     if epoch is not None:
@@ -172,6 +176,7 @@ def main() -> None:
     )
     parser.add_argument("--contrastive-margin", type=float, default=1.0)
     parser.add_argument("--languages", help="Comma-separated dataset languages to train on. Defaults to all languages in the dataset.")
+    parser.add_argument("--sample-ids-file", type=Path, help="Optional JSON file containing proposition IDs to include as train/eval samples.")
     parser.add_argument("--language-embedding-dim", type=int, default=8)
     parser.add_argument("--device", default="auto", help="Training device: auto, cpu, cuda, or cuda:N.")
     parser.add_argument("--checkpoint-every", type=int, default=0, help="Save an intermediate checkpoint every N epochs.")
@@ -191,11 +196,17 @@ def main() -> None:
         for field in args.formal_target_shuffle_fields.split(",")
         if field.strip()
     ]
+    sample_ids = None
+    if args.sample_ids_file:
+        import json
+
+        sample_ids = json.loads(args.sample_ids_file.read_text(encoding="utf-8"))
     dataset = TractatusDataset(
         args.data,
         languages=languages,
         formal_target_shuffle_seed=args.formal_target_shuffle_seed,
         formal_target_shuffle_fields=args.formal_target_shuffle_fields,
+        sample_ids=sample_ids,
     )
     loader = DataLoader(
         dataset,

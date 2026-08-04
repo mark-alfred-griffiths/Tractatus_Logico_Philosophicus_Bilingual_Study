@@ -56,9 +56,11 @@ class TractatusDataset(Dataset):
         language_to_id: dict[str, int] | None = None,
         formal_target_shuffle_seed: int | None = None,
         formal_target_shuffle_fields: list[str] | None = None,
+        sample_ids: list[str] | set[str] | None = None,
     ):
         self.rows = json.loads(Path(data_path).read_text(encoding="utf-8"))
         self.max_len = max_len
+        self.sample_ids = set(sample_ids) if sample_ids is not None else None
         self.id_to_index = {row["id"]: i + 1 for i, row in enumerate(self.rows)}
         self.max_depth = max(row["depth"] for row in self.rows)
         self.languages = self._resolve_languages(languages)
@@ -92,6 +94,8 @@ class TractatusDataset(Dataset):
     def _build_samples(self) -> list[dict]:
         samples: list[dict] = []
         for row in self.rows:
+            if self.sample_ids is not None and row["id"] not in self.sample_ids:
+                continue
             texts = self._row_texts(row)
             for language in self.languages:
                 text = texts.get(language)

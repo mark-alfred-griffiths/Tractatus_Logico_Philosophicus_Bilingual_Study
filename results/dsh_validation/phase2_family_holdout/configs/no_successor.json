@@ -1,0 +1,31 @@
+{
+  "batch_size": 32,
+  "beta": 0.01,
+  "beta_structure": 0.05,
+  "beta_text": 0.01,
+  "condition": "no_successor",
+  "device": "cuda",
+  "epochs": 80,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "lambda_child": 0.02,
+  "lambda_depth": 0.1,
+  "lambda_language_alignment": 0.0,
+  "lambda_next": 0.0,
+  "lambda_parent": 0.2,
+  "language_embedding_dim": 8,
+  "lr": 0.001,
+  "matched_resamples": 5000,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "structure_latent_dim": 8,
+  "text_latent_dim": 24
+}

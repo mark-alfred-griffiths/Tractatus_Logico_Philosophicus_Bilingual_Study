@@ -1,0 +1,40 @@
+{
+  "conditions": [
+    "full_model",
+    "no_successor",
+    "reconstruction_only"
+  ],
+  "fold_manifest": "/media/mgriffiths/HDD/PycharmProjects/Tractatus_Logico_Philosophicus_Bilingual_Study/results/dsh_validation/phase2_family_holdout/phase2_fold_manifest.csv",
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "git_branch": "hold-out-and-ablation",
+  "git_commit": "4d46c626c57c51b7b7a7049e8ba288d73f6bade8",
+  "git_status_at_start": "M tractatus_structure_latents/training/data.py\n M tractatus_structure_latents/training/train_vae.py\n?? .idea/\n?? results/dsh_validation/phase1_ablations/checkpoints/\n?? results/dsh_validation/phase1_ablations/smoke/\n?? results/dsh_validation/phase2_family_holdout/\n?? tests/__pycache__/\n?? tools/__pycache__/\n?? tools/phase2_family_holdout.py",
+  "gpu_info": {
+    "cuda_available": true,
+    "device_count": 1,
+    "devices": [
+      "NVIDIA GeForce RTX 3060 Ti"
+    ]
+  },
+  "matched_resamples": 5000,
+  "package_versions": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "platform": "Linux-6.17.9-76061709-generic-x86_64-with-glibc2.35",
+    "pyarrow": "24.0.0",
+    "python": "3.10.12 (main, Jan  8 2026, 06:52:19) [GCC 11.4.0]",
+    "scikit_learn": "1.7.2",
+    "torch": "2.12.0+cu130"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ]
+}
