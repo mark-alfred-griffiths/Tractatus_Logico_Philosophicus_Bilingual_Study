@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from functools import partial
+import json
+import math
 from pathlib import Path
 import random
 
@@ -36,6 +39,53 @@ def set_seed(seed: int) -> torch.Generator:
     generator = torch.Generator()
     generator.manual_seed(seed)
     return generator
+
+
+class PairedLanguageBatchSampler:
+    def __init__(
+        self,
+        dataset: TractatusDataset,
+        batch_size: int,
+        generator: torch.Generator,
+        paired_languages: tuple[str, str] = ("de", "en"),
+    ):
+        if batch_size % 2 != 0:
+            raise ValueError("--paired-language-batches requires an even --batch-size")
+        self.ids_per_batch = batch_size // 2
+        self.generator = generator
+        left_language, right_language = paired_languages
+        by_id: dict[str, dict[str, int]] = {}
+        for sample_i, sample in enumerate(dataset.samples):
+            by_id.setdefault(str(sample["id"]), {})[str(sample["language"])] = sample_i
+        missing = [
+            prop_id
+            for prop_id, language_to_sample in by_id.items()
+            if left_language not in language_to_sample or right_language not in language_to_sample
+        ]
+        if missing:
+            preview = ", ".join(missing[:5])
+            raise ValueError(f"Missing paired {left_language}/{right_language} samples for proposition IDs: {preview}")
+        self.pairs = sorted(
+            (
+                dataset.id_to_index[prop_id],
+                language_to_sample[left_language],
+                language_to_sample[right_language],
+            )
+            for prop_id, language_to_sample in by_id.items()
+        )
+        self.corpus_pair_count = len(self.pairs)
+
+    def __iter__(self):
+        order = torch.randperm(len(self.pairs), generator=self.generator).tolist()
+        for start in range(0, len(order), self.ids_per_batch):
+            batch: list[int] = []
+            for pair_i in order[start : start + self.ids_per_batch]:
+                _prop_index, left_sample_i, right_sample_i = self.pairs[pair_i]
+                batch.extend([left_sample_i, right_sample_i])
+            yield batch
+
+    def __len__(self) -> int:
+        return math.ceil(len(self.pairs) / self.ids_per_batch)
 
 
 def move_batch_to_device(batch: dict, device: torch.device) -> dict:
@@ -74,6 +124,8 @@ def checkpoint_payload(
         "formal_target_shuffle_fields": args.formal_target_shuffle_fields,
         "sample_ids_file": str(args.sample_ids_file) if args.sample_ids_file else None,
         "sample_ids_count": len(dataset.sample_ids) if dataset.sample_ids is not None else None,
+        "paired_language_batches": args.paired_language_batches,
+        "paired_languages": args.paired_languages,
         "seed": args.seed,
     }
     if epoch is not None:
@@ -127,6 +179,15 @@ def language_alignment_loss(
     indices: torch.Tensor,
     language_ids: torch.Tensor,
 ) -> torch.Tensor:
+    loss, _pair_count = language_alignment_loss_with_count(z, indices, language_ids)
+    return loss
+
+
+def language_alignment_loss_with_count(
+    z: torch.Tensor,
+    indices: torch.Tensor,
+    language_ids: torch.Tensor,
+) -> tuple[torch.Tensor, int]:
     pairs: list[tuple[int, int]] = []
     index_to_items: dict[int, list[tuple[int, int]]] = {}
     for batch_i, (index, language_id) in enumerate(zip(indices.detach().cpu().tolist(), language_ids.detach().cpu().tolist())):
@@ -139,11 +200,35 @@ def language_alignment_loss(
                     pairs.append((left_batch_i, right_batch_i))
 
     if not pairs:
-        return z.new_tensor(0.0)
+        return z.new_tensor(0.0), 0
 
     left = torch.tensor([i for i, _ in pairs], device=z.device)
     right = torch.tensor([j for _, j in pairs], device=z.device)
-    return F.mse_loss(z[left], z[right])
+    pair_mse = (z[left] - z[right]).pow(2).mean(dim=-1)
+    return pair_mse.mean(), len(pairs)
+
+
+def mean_same_id_distance(z: torch.Tensor, indices: torch.Tensor, language_ids: torch.Tensor) -> float:
+    index_to_items: dict[int, list[tuple[int, int]]] = {}
+    for row_i, (index, language_id) in enumerate(zip(indices.detach().cpu().tolist(), language_ids.detach().cpu().tolist())):
+        index_to_items.setdefault(int(index), []).append((row_i, int(language_id)))
+    distances: list[float] = []
+    for items in index_to_items.values():
+        for left_i, (left_row_i, left_language_id) in enumerate(items):
+            for right_row_i, right_language_id in items[left_i + 1 :]:
+                if left_language_id != right_language_id:
+                    distances.append(float(torch.dist(z[left_row_i], z[right_row_i]).detach().cpu()))
+    return sum(distances) / max(len(distances), 1)
+
+
+def append_epoch_metrics(path: Path, row: dict[str, float | int]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    exists = path.exists()
+    with path.open("a", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(row), lineterminator="\n")
+        if not exists:
+            writer.writeheader()
+        writer.writerow(row)
 
 
 def main() -> None:
@@ -180,6 +265,9 @@ def main() -> None:
     parser.add_argument("--language-embedding-dim", type=int, default=8)
     parser.add_argument("--device", default="auto", help="Training device: auto, cpu, cuda, or cuda:N.")
     parser.add_argument("--checkpoint-every", type=int, default=0, help="Save an intermediate checkpoint every N epochs.")
+    parser.add_argument("--paired-language-batches", action="store_true", help="Batch German/English rows with the same proposition ID together.")
+    parser.add_argument("--paired-languages", default="de,en", help="Comma-separated language pair used by --paired-language-batches.")
+    parser.add_argument("--epoch-metrics-out", type=Path, help="Optional CSV path for per-epoch training diagnostics.")
     parser.add_argument("--freeze-decoder", action="store_true")
     parser.add_argument("--freeze-embeddings", action="store_true")
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -198,8 +286,6 @@ def main() -> None:
     ]
     sample_ids = None
     if args.sample_ids_file:
-        import json
-
         sample_ids = json.loads(args.sample_ids_file.read_text(encoding="utf-8"))
     dataset = TractatusDataset(
         args.data,
@@ -208,13 +294,21 @@ def main() -> None:
         formal_target_shuffle_fields=args.formal_target_shuffle_fields,
         sample_ids=sample_ids,
     )
-    loader = DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        collate_fn=partial(collate_batch, pad_idx=dataset.vocab.pad_idx),
-        generator=data_generator,
-    )
+    paired_languages = tuple(language.strip() for language in args.paired_languages.split(",") if language.strip())
+    if len(paired_languages) != 2:
+        raise ValueError("--paired-languages must contain exactly two comma-separated language codes")
+    paired_sampler = None
+    if args.paired_language_batches:
+        paired_sampler = PairedLanguageBatchSampler(dataset, args.batch_size, data_generator, paired_languages=paired_languages)
+        loader = DataLoader(dataset, batch_sampler=paired_sampler, collate_fn=partial(collate_batch, pad_idx=dataset.vocab.pad_idx))
+    else:
+        loader = DataLoader(
+            dataset,
+            batch_size=args.batch_size,
+            shuffle=True,
+            collate_fn=partial(collate_batch, pad_idx=dataset.vocab.pad_idx),
+            generator=data_generator,
+        )
     if args.split_latent:
         args.latent_dim = args.text_latent_dim + args.structure_latent_dim
         model = SplitLatentHierarchicalRNNVAE(
@@ -265,10 +359,30 @@ def main() -> None:
         print("froze encoder and decoder token embeddings", flush=True)
     optimizer = torch.optim.AdamW([parameter for parameter in model.parameters() if parameter.requires_grad], lr=args.lr)
     lambdas = (args.lambda_parent, args.lambda_depth, args.lambda_next, args.lambda_child)
+    if args.epoch_metrics_out and args.epoch_metrics_out.exists():
+        args.epoch_metrics_out.unlink()
 
     for epoch in range(1, args.epochs + 1):
         model.train()
-        total = 0.0
+        totals = {
+            "loss": 0.0,
+            "reconstruction": 0.0,
+            "parent": 0.0,
+            "depth": 0.0,
+            "next": 0.0,
+            "child": 0.0,
+            "kl": 0.0,
+            "kl_text": 0.0,
+            "kl_structure": 0.0,
+        }
+        epoch_pair_count = 0
+        epoch_alignment_mse_sum = 0.0
+        epoch_weighted_alignment_sum = 0.0
+        epoch_grad_norms: list[float] = []
+        epoch_structure_mu: list[torch.Tensor] = []
+        epoch_structure_var: list[torch.Tensor] = []
+        epoch_indices: list[torch.Tensor] = []
+        epoch_language_ids: list[torch.Tensor] = []
         for batch in loader:
             batch = move_batch_to_device(batch, device)
             optimizer.zero_grad(set_to_none=True)
@@ -297,14 +411,58 @@ def main() -> None:
             )
             if contrastive.requires_grad:
                 losses["loss"] = losses["loss"] + contrastive
-            alignment = language_alignment_loss(outputs["structure_mu"], batch["index"], batch["language_ids"])
+            alignment, pair_count = language_alignment_loss_with_count(outputs["structure_mu"], batch["index"], batch["language_ids"])
             if args.lambda_language_alignment > 0 and alignment.requires_grad:
                 losses["loss"] = losses["loss"] + args.lambda_language_alignment * alignment
+            epoch_pair_count += pair_count
+            epoch_alignment_mse_sum += float(alignment.detach()) * pair_count
+            epoch_weighted_alignment_sum += float((args.lambda_language_alignment * alignment).detach()) * pair_count
             losses["loss"].backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
-            total += float(losses["loss"].detach())
-        print(f"epoch={epoch} loss={total / max(len(loader), 1):.4f}", flush=True)
+            epoch_grad_norms.append(float(grad_norm.detach().cpu() if torch.is_tensor(grad_norm) else grad_norm))
+            for name in totals:
+                if name in losses:
+                    totals[name] += float(losses[name].detach())
+            epoch_structure_mu.append(outputs["structure_mu"].detach().cpu())
+            epoch_structure_var.append(outputs["structure_logvar"].detach().cpu().exp())
+            epoch_indices.append(batch["index"].detach().cpu())
+            epoch_language_ids.append(batch["language_ids"].detach().cpu())
+        batch_count = max(len(loader), 1)
+        total_possible_pairs = paired_sampler.corpus_pair_count if paired_sampler is not None else dataset.proposition_count
+        pair_coverage = epoch_pair_count / max(total_possible_pairs, 1)
+        if paired_sampler is not None and epoch_pair_count != paired_sampler.corpus_pair_count:
+            raise AssertionError(
+                f"Paired batch coverage failed: saw {epoch_pair_count} pairs, expected {paired_sampler.corpus_pair_count}"
+            )
+        structure_mu = torch.cat(epoch_structure_mu, dim=0)
+        structure_var = torch.cat(epoch_structure_var, dim=0)
+        epoch_index = torch.cat(epoch_indices, dim=0)
+        epoch_language_id = torch.cat(epoch_language_ids, dim=0)
+        epoch_row = {
+            "epoch": epoch,
+            "same_id_pairs_processed": epoch_pair_count,
+            "pair_coverage": pair_coverage,
+            "raw_alignment_mse": epoch_alignment_mse_sum / max(epoch_pair_count, 1),
+            "weighted_alignment_contribution": epoch_weighted_alignment_sum / max(epoch_pair_count, 1),
+            "loss": totals["loss"] / batch_count,
+            "reconstruction_loss": totals["reconstruction"] / batch_count,
+            "parent_loss": totals["parent"] / batch_count,
+            "depth_loss": totals["depth"] / batch_count,
+            "successor_loss": totals["next"] / batch_count,
+            "child_count_loss": totals["child"] / batch_count,
+            "kl": totals["kl"] / batch_count,
+            "kl_text": totals["kl_text"] / batch_count,
+            "kl_structure": totals["kl_structure"] / batch_count,
+            "same_id_distance": mean_same_id_distance(structure_mu, epoch_index, epoch_language_id),
+            "structure_mean_norm": float(structure_mu.norm(dim=-1).mean()),
+            "posterior_variance": float(structure_var.mean()),
+            "gradient_norm": sum(epoch_grad_norms) / max(len(epoch_grad_norms), 1),
+            "learning_rate": optimizer.param_groups[0]["lr"],
+        }
+        if args.epoch_metrics_out:
+            append_epoch_metrics(args.epoch_metrics_out, epoch_row)
+        print(f"epoch={epoch} loss={epoch_row['loss']:.4f}", flush=True)
         if args.checkpoint_every > 0 and epoch % args.checkpoint_every == 0:
             args.out.parent.mkdir(parents=True, exist_ok=True)
             checkpoint_path = args.out.with_suffix(f".epoch{epoch}.pt")

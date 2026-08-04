@@ -1,0 +1,536 @@
+# Phase 3 Verification Report
+
+- All tabular/report deliverables are present.
+- Observed the expected 120 condition/lambda/seed final metric rows.
+- All required final metric columns are present.
+- Summary means and sample SDs recompute exactly from seed metrics.
+- Paired runs have 100% pair coverage for every seed/lambda/condition.
+- Epoch trajectory parquet reconstructs from raw per-run CSV files.
+- All required figures are present.
+- No tracked diffs touch manuscript files or canonical run outputs.
+- Git branch: hold-out-and-ablation.
+- Git commit during verification: 45c733ac6a86d0de9b03a10b5ab40de6c4f69f70.
+
+## Git status
+
+```
+A  results/dsh_validation/phase3_controlled_alignment/configs/no_successor_expansion_decision.json
+A  results/dsh_validation/phase3_controlled_alignment/configs/paired_full_model.json
+A  results/dsh_validation/phase3_controlled_alignment/configs/paired_no_successor.json
+A  results/dsh_validation/phase3_controlled_alignment/configs/random_full_model.json
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align000/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align003/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align010/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align030/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/full_model/align100/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align000/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align003/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align010/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align030/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/paired/no_successor/align100/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align000/seed009.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed000.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed001.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed002.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed003.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed004.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed005.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed006.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed007.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed008.csv
+AM results/dsh_validation/phase3_controlled_alignment/epoch_trajectories/random/full_model/align003/seed009.csv
+A  results/dsh_validation/phase3_controlled_alignment/figures/alignment_loss_trajectories.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/formal_depth_accuracy_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/formal_parent_accuracy_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/formal_successor_accuracy_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/paired_versus_random_batching.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/posterior_variance_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/retrieval_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/same_id_distance_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/figures/structure_mean_norm_across_lambda.png
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align000/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align003/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align010/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align030/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/full_model/align100/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align000/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align003/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align010/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align030/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/paired/no_successor/align100/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align000/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed000.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed001.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed002.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed003.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed004.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed005.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed006.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed007.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed008.train.log
+A  results/dsh_validation/phase3_controlled_alignment/logs/random/full_model/align003/seed009.train.log
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align000/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align003/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align010/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align030/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_full_model_align100/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align000/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align003/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align010/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align030/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/paired_no_successor_align100/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align000/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed000.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed001.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed002.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed003.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed004.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed005.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed006.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed007.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed008.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/per_seed/random_full_model_align003/seed009.metrics.json
+A  results/dsh_validation/phase3_controlled_alignment/phase3_alignment_report.md
+A  results/dsh_validation/phase3_controlled_alignment/phase3_commands.sh
+A  results/dsh_validation/phase3_controlled_alignment/phase3_epoch_trajectories.parquet
+A  results/dsh_validation/phase3_controlled_alignment/phase3_pair_coverage.csv
+A  results/dsh_validation/phase3_controlled_alignment/phase3_seed_results.csv
+A  results/dsh_validation/phase3_controlled_alignment/phase3_summary.csv
+A  results/dsh_validation/phase3_controlled_alignment/phase3_verification_report.md
+A  tools/phase3_controlled_alignment.py
+MM tractatus_structure_latents/training/train_vae.py
+?? .idea/
+?? results/dsh_validation/phase1_ablations/checkpoints/
+?? results/dsh_validation/phase1_ablations/smoke/
+?? results/dsh_validation/phase2_family_holdout/checkpoints/
+?? results/dsh_validation/phase2_family_holdout/smoke/
+?? results/dsh_validation/phase3_controlled_alignment/checkpoints/
+?? results/dsh_validation/phase3_controlled_alignment/raw/
+?? results/dsh_validation/phase3_controlled_alignment/smoke/
+?? tests/__pycache__/
+?? tools/__pycache__/
+```
+
+## Git diff stat
+
+```
+.../paired/full_model/align000/seed000.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed001.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed002.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed003.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed004.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed005.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed006.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed007.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed008.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align000/seed009.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed000.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed001.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed002.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed003.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed004.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed005.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed006.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed007.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed008.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align003/seed009.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed000.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed001.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed002.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed003.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed004.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed005.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed006.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed007.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed008.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align010/seed009.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed000.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed001.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed002.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed003.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed004.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed005.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed006.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed007.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed008.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align030/seed009.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed000.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed001.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed002.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed003.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed004.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed005.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed006.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed007.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed008.csv         | 162 ++++++++++-----------
+ .../paired/full_model/align100/seed009.csv         | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed000.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed001.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed002.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed003.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed004.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed005.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed006.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed007.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed008.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align000/seed009.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed000.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed001.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed002.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed003.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed004.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed005.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed006.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed007.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed008.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align003/seed009.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed000.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed001.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed002.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed003.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed004.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed005.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed006.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed007.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed008.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align010/seed009.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed000.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed001.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed002.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed003.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed004.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed005.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed006.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed007.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed008.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align030/seed009.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed000.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed001.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed002.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed003.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed004.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed005.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed006.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed007.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed008.csv       | 162 ++++++++++-----------
+ .../paired/no_successor/align100/seed009.csv       | 162 ++++++++++-----------
+ .../random/full_model/align000/seed000.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed001.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed002.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed003.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed004.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed005.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed006.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed007.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed008.csv         | 162 ++++++++++-----------
+ .../random/full_model/align000/seed009.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed000.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed001.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed002.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed003.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed004.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed005.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed006.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed007.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed008.csv         | 162 ++++++++++-----------
+ .../random/full_model/align003/seed009.csv         | 162 ++++++++++-----------
+ tractatus_structure_latents/training/train_vae.py  |   2 +-
+ 121 files changed, 9721 insertions(+), 9721 deletions(-)
+```

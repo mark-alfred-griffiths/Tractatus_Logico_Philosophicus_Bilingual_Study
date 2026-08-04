@@ -1,0 +1,27 @@
+{
+  "all_seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "expand": true,
+  "pilot_seeds": [
+    0,
+    1,
+    2
+  ],
+  "reasons": [
+    "Top-1 differs by 0.4503 at lambda=0.00",
+    "Top-1 differs by 0.4309 at lambda=0.03",
+    "Top-1 differs by 0.3878 at lambda=0.10",
+    "Top-1 differs by 0.3216 at lambda=0.30",
+    "Top-1 differs by 0.2915 at lambda=1.00"
+  ]
+}

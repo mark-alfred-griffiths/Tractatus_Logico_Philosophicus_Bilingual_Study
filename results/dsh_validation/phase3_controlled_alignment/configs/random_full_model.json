@@ -1,0 +1,37 @@
+{
+  "batch_size": 32,
+  "batching": "random",
+  "beta": 0.01,
+  "beta_structure": 0.05,
+  "beta_text": 0.01,
+  "condition": {
+    "lambda_child": 0.02,
+    "lambda_depth": 0.1,
+    "lambda_next": 0.2,
+    "lambda_parent": 0.2,
+    "name": "full_model"
+  },
+  "data": "/media/mgriffiths/HDD/PycharmProjects/Tractatus_Logico_Philosophicus_Bilingual_Study/tractatus_structure_latents/data/tractatus_bilingual.json",
+  "device": "cuda",
+  "epochs": 80,
+  "lambdas": [
+    0.0,
+    0.03
+  ],
+  "language_embedding_dim": 8,
+  "lr": 0.001,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "structure_latent_dim": 8,
+  "text_latent_dim": 24
+}
