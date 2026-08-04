@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import random
 import re
 
 import torch
@@ -53,6 +54,8 @@ class TractatusDataset(Dataset):
         max_len: int = 96,
         languages: list[str] | None = None,
         language_to_id: dict[str, int] | None = None,
+        formal_target_shuffle_seed: int | None = None,
+        formal_target_shuffle_fields: list[str] | None = None,
     ):
         self.rows = json.loads(Path(data_path).read_text(encoding="utf-8"))
         self.max_len = max_len
@@ -60,6 +63,10 @@ class TractatusDataset(Dataset):
         self.max_depth = max(row["depth"] for row in self.rows)
         self.languages = self._resolve_languages(languages)
         self.language_to_id = language_to_id or {language: i for i, language in enumerate(self.languages)}
+        self.formal_targets = self._build_formal_targets(
+            formal_target_shuffle_seed,
+            formal_target_shuffle_fields,
+        )
         self.samples = self._build_samples()
         if not self.samples:
             raise ValueError(f"No text samples found for languages: {','.join(self.languages)}")
@@ -92,6 +99,38 @@ class TractatusDataset(Dataset):
                     samples.append({"row": row, "id": row["id"], "language": language, "text": text})
         return samples
 
+    def _row_formal_target(self, row: dict) -> dict[str, int | float]:
+        return {
+            "parent": self._index_or_zero(row["parent_id"]),
+            "depth": int(row["depth"]),
+            "next": self._index_or_zero(row["next_id"]),
+            "child_count": float(row["child_count"]),
+        }
+
+    def _build_formal_targets(
+        self,
+        shuffle_seed: int | None,
+        shuffle_fields: list[str] | None,
+    ) -> list[dict[str, int | float]]:
+        targets = [self._row_formal_target(row) for row in self.rows]
+        if shuffle_seed is None:
+            return targets
+
+        fields = shuffle_fields or ["parent", "depth", "next", "child_count"]
+        allowed = {"parent", "depth", "next", "child_count"}
+        invalid = [field for field in fields if field not in allowed]
+        if invalid:
+            raise ValueError(f"Unsupported formal target shuffle field(s): {','.join(invalid)}")
+
+        tuples = [tuple(target[field] for field in fields) for target in targets]
+        permutation = list(range(len(tuples)))
+        random.Random(shuffle_seed).shuffle(permutation)
+        shuffled = [dict(target) for target in targets]
+        for row_i, tuple_i in enumerate(permutation):
+            for field, value in zip(fields, tuples[tuple_i]):
+                shuffled[row_i][field] = value
+        return shuffled
+
     def __len__(self) -> int:
         return len(self.samples)
 
@@ -109,6 +148,7 @@ class TractatusDataset(Dataset):
     def __getitem__(self, idx: int) -> dict[str, torch.Tensor | str]:
         sample = self.samples[idx]
         row = sample["row"]
+        formal_target = self.formal_targets[self.id_to_index[row["id"]] - 1]
         ids = self.vocab.encode(sample["text"])[: self.max_len]
         if ids[-1] != self.vocab.token_to_id[EOS]:
             ids[-1] = self.vocab.token_to_id[EOS]
@@ -118,10 +158,10 @@ class TractatusDataset(Dataset):
             "language_id": torch.tensor(self.language_to_id[sample["language"]], dtype=torch.long),
             "index": torch.tensor(self.id_to_index[row["id"]], dtype=torch.long),
             "input_ids": torch.tensor(ids, dtype=torch.long),
-            "parent": torch.tensor(self._index_or_zero(row["parent_id"]), dtype=torch.long),
-            "depth": torch.tensor(row["depth"], dtype=torch.long),
-            "next": torch.tensor(self._index_or_zero(row["next_id"]), dtype=torch.long),
-            "child_count": torch.tensor(row["child_count"], dtype=torch.float),
+            "parent": torch.tensor(int(formal_target["parent"]), dtype=torch.long),
+            "depth": torch.tensor(int(formal_target["depth"]), dtype=torch.long),
+            "next": torch.tensor(int(formal_target["next"]), dtype=torch.long),
+            "child_count": torch.tensor(float(formal_target["child_count"]), dtype=torch.float),
         }
 
 

@@ -68,6 +68,8 @@ def checkpoint_payload(
         "language_count": dataset.language_count,
         "language_embedding_dim": args.language_embedding_dim,
         "lambda_language_alignment": args.lambda_language_alignment,
+        "formal_target_shuffle_seed": args.formal_target_shuffle_seed,
+        "formal_target_shuffle_fields": args.formal_target_shuffle_fields,
         "seed": args.seed,
     }
     if epoch is not None:
@@ -162,6 +164,12 @@ def main() -> None:
     parser.add_argument("--lambda-sibling-contrastive", type=float, default=0.0)
     parser.add_argument("--lambda-unrelated-contrastive", type=float, default=0.0)
     parser.add_argument("--lambda-language-alignment", type=float, default=0.0)
+    parser.add_argument("--formal-target-shuffle-seed", type=int, help="Deterministically shuffle selected formal target tuples across proposition IDs before training.")
+    parser.add_argument(
+        "--formal-target-shuffle-fields",
+        default="parent,depth,next,child_count",
+        help="Comma-separated formal target fields to jointly shuffle when --formal-target-shuffle-seed is set.",
+    )
     parser.add_argument("--contrastive-margin", type=float, default=1.0)
     parser.add_argument("--languages", help="Comma-separated dataset languages to train on. Defaults to all languages in the dataset.")
     parser.add_argument("--language-embedding-dim", type=int, default=8)
@@ -178,7 +186,17 @@ def main() -> None:
     languages = [language.strip() for language in args.languages.split(",") if language.strip()] if args.languages else None
     device = resolve_device(args.device)
     print(f"using device={device}", flush=True)
-    dataset = TractatusDataset(args.data, languages=languages)
+    args.formal_target_shuffle_fields = [
+        field.strip()
+        for field in args.formal_target_shuffle_fields.split(",")
+        if field.strip()
+    ]
+    dataset = TractatusDataset(
+        args.data,
+        languages=languages,
+        formal_target_shuffle_seed=args.formal_target_shuffle_seed,
+        formal_target_shuffle_fields=args.formal_target_shuffle_fields,
+    )
     loader = DataLoader(
         dataset,
         batch_size=args.batch_size,
