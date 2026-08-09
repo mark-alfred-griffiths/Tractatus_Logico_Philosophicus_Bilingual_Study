@@ -186,9 +186,6 @@ access. For a fully offline test, provide a local source text with
 Before a full rerun, test that each empirical runner can execute without
 touching the canonical `results/dsh_validation/` tree:
 
-Use a real Git clone with a valid HEAD for canonical retained evidence; missing
-Git metadata is acceptable only for smoke tests.
-
 ```bash
 python3 tools/phase1_ablations.py run \
   --out-root tmp/repro_smoke/phase1_ablations \
@@ -257,6 +254,11 @@ Phase 4:
 ```bash
 python3 tools/phase4_case_studies.py run
 ```
+
+Phase 4 intentionally has no `--skip-existing` option. By default it reuses the
+existing `candidate_manifest_pre_text.csv` so the frozen text-blind case
+selection is preserved. Use `--reselect` only when deliberately creating a new
+frozen selection manifest.
 
 Rebuild derived paper outputs:
 
