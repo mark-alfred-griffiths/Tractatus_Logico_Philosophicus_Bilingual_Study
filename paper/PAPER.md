@@ -1,17 +1,8 @@
 # Paper Companion Files
 
 This directory contains manuscript-facing files for the empirical work behind
-`paper/Tractatus_final.docx`.
-
-## Current Manuscript
-
-```text
-paper/Tractatus_final.docx
-```
-
-This `.docx` is the current manuscript target. Other paper text or LaTeX files
-should be treated as retained provenance unless a current manifest marks them
-as active.
+the final paper. Manuscript text files should be treated as retained provenance
+unless a current manifest marks them as active.
 
 ## Figures And Tables
 

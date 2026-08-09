@@ -1,8 +1,8 @@
 # Results
 
-The current results layer for `paper/Tractatus_final.docx` is
-`results/dsh_validation/`. It contains retained Phase 1-4 empirical outputs,
-canonical reports, verification files, and the validation bundle.
+The current results layer for the final paper is `results/dsh_validation/`. It
+contains retained Phase 1-4 empirical outputs, canonical reports, verification
+files, and the validation bundle.
 
 ## Canonical Evidence
 

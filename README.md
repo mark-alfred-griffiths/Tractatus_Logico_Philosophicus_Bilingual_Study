@@ -1,7 +1,7 @@
 # Tractatus Structure Latents
 
-This repository is the companion repository for the empirical work behind
-`paper/Tractatus_final.docx`.
+This repository is the companion repository for the empirical work behind the
+final paper.
 
 The project tests whether formal proposition-number relations in Wittgenstein's
 *Tractatus Logico-Philosophicus* can supervise split-latent models toward a
@@ -15,7 +15,6 @@ derivable from proposition numbers.
 For the final paper, start here:
 
 ```text
-paper/Tractatus_final.docx
 paper/final_paper_manifest.csv
 paper/figures/figure_manifest.csv
 paper/tables/table_manifest.csv

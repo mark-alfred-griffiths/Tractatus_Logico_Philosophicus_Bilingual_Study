@@ -1,7 +1,6 @@
 # Documentation Index
 
-This index is organised for readers of the final manuscript
-`paper/Tractatus_final.docx`.
+This index is organised for readers of the final manuscript.
 
 ## Final Paper Route
 

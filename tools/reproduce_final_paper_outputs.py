@@ -55,7 +55,7 @@ def fail_if_removed_artifact_is_canonical() -> None:
     figure_manifest = ROOT / "paper" / "figures" / "figure_manifest.csv"
     for row in read_csv(figure_manifest):
         joined = ",".join(row.values())
-        canonical = row.get("used_in_final_docx") == "yes" or row.get("canonical_status") == "canonical_evidence"
+        canonical = row.get("used_in_final_manuscript") == "yes" or row.get("canonical_status") == "canonical_evidence"
         if canonical and any(marker in joined for marker in NONCANONICAL_MARKERS):
             failures.append(f"{figure_manifest}: {row.get('figure_id', '<unknown>')} uses a removed/noncanonical marker")
 
@@ -68,7 +68,7 @@ def fail_if_removed_artifact_is_canonical() -> None:
     final_manifest = ROOT / "paper" / "final_paper_manifest.csv"
     for row in read_csv(final_manifest):
         joined = ",".join(row.values())
-        canonical = row.get("used_by_tractatus_final_docx") == "yes" or row.get("canonical_status") == "canonical_evidence"
+        canonical = row.get("used_by_final_manuscript") == "yes" or row.get("canonical_status") == "canonical_evidence"
         if canonical and any(marker in joined for marker in NONCANONICAL_MARKERS):
             failures.append(f"{final_manifest}: {row.get('path', '<unknown>')} uses a removed/noncanonical marker")
 

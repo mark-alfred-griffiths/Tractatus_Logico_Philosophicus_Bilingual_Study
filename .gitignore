@@ -16,7 +16,6 @@ __pycache__/
 .DS_Store
 *.tmp
 *.bak
-~$*.docx
 
 # Local scratch outputs
 tmp/

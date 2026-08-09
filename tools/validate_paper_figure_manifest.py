@@ -56,7 +56,7 @@ def main() -> int:
 
     listed_files: set[Path] = {args.manifest}
     for line_number, row in enumerate(rows, start=2):
-        if row.get("used_in_final_docx") != "yes":
+        if row.get("used_in_final_manuscript") != "yes":
             failures.append(
                 f"line {line_number}: non-paper figure row is not allowed in final manifest: "
                 f"{row.get('figure_id', '<unknown>')}"
@@ -71,7 +71,7 @@ def main() -> int:
         if not row.get("sha256", "").strip():
             failures.append(f"line {line_number}: empty sha256")
 
-        if row.get("used_in_final_docx") == "yes":
+        if row.get("used_in_final_manuscript") == "yes":
             for path in iter_paths(row.get("figure_file", "")):
                 if path.suffix.lower() != ".png":
                     continue

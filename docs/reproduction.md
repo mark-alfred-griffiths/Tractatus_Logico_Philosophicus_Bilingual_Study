@@ -4,9 +4,8 @@ Run commands from the repository root.
 
 ## Default Final-Paper Path
 
-The current manuscript target is `paper/Tractatus_final.docx`. The default
-reproduction path is non-training and works from retained evidence under
-`results/dsh_validation/`.
+The default reproduction path is non-training and works from retained evidence
+under `results/dsh_validation/`.
 
 Start with a dry run:
 

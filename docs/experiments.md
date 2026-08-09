@@ -1,7 +1,7 @@
 # Experiments
 
-The current empirical layer for `paper/Tractatus_final.docx` is the Phase 1-4
-validation suite under `results/dsh_validation/`.
+The current empirical layer for the final paper is the Phase 1-4 validation
+suite under `results/dsh_validation/`.
 
 ## Canonical Phases
 
