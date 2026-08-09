@@ -21,11 +21,25 @@ __pycache__/
 tmp/
 scratch/
 
-# External retained empirical artifacts
-# These are archived outside Git with SHA256 hashes in docs/heavy_artifacts_manifest.csv.
-results/dsh_validation/**/checkpoints/
-results/dsh_validation/**/raw/
-results/dsh_validation/**/smoke/
-results/dsh_validation/**/*.parquet
+# External retained artifact archives
+tractatus-heavy-retained-artifacts-*.tar.gz
+tractatus-heavy-retained-artifacts-*.tar.gz.sha256
+SHA256SUMS*.txt
+
+# Restored heavy reproducibility artifacts
 results/dsh_validation/dsh_validation_bundle/
 results/dsh_validation/dsh_validation_bundle.zip
+
+results/dsh_validation/phase1_ablations/checkpoints/
+results/dsh_validation/phase1_ablations/raw/
+results/dsh_validation/phase1_ablations/smoke/
+
+results/dsh_validation/phase2_family_holdout/checkpoints/
+results/dsh_validation/phase2_family_holdout/raw/
+results/dsh_validation/phase2_family_holdout/smoke/
+
+results/dsh_validation/phase3_controlled_alignment/checkpoints/
+results/dsh_validation/phase3_controlled_alignment/raw/
+results/dsh_validation/phase3_controlled_alignment/smoke/
+
+results/dsh_validation/phase4_case_studies/data/selected_case_raw_outputs.parquet

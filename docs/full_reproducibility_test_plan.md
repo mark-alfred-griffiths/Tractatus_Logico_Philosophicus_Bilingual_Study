@@ -123,22 +123,26 @@ PY
 Expected result: every archived file exists and matches the SHA256 recorded in
 `docs/heavy_artifacts_manifest.csv`.
 
-## 4. Recreate Local Validation Bundle
+## 4. Verify Restored Heavy Artifacts
 
-After restoring heavy artifacts, recreate the ignored local validation bundle:
+The validation bundle is archival packaging and is not required for canonical
+paper reproducibility. Do not run `--include-bundle` as part of the standard
+test plan.
+
+After restoring the heavy archive, verify the canonical evidence layer:
 
 ```bash
-python3 tools/reproduce_final_paper_outputs.py --include-bundle
 python3 tools/verify_canonical_evidence.py
+python3 tools/reproduce_final_paper_outputs.py
+python3 -m pytest
 ```
 
 Expected result:
 
-- `results/dsh_validation/dsh_validation_bundle/` is created locally
-- `results/dsh_validation/dsh_validation_bundle.zip` is created locally
+- restored checkpoints, raw parquet outputs, and smoke outputs remain local
 - canonical evidence verification passes
-
-These bundle paths are ignored by Git.
+- paper-facing derived outputs regenerate without training
+- tests pass
 
 ## 5. Rebuild Dataset Files From Source
 
@@ -212,6 +216,11 @@ python3 tools/phase3_controlled_alignment.py run \
 Expected result: each command completes and writes local ignored smoke outputs
 under `tmp/repro_smoke/`.
 
+Short smoke runs may emit sklearn warnings such as `y_pred contains classes not
+in y_true` during parent/depth metric calculation. These warnings are acceptable
+for 1-epoch smoke runs; treat only a non-zero exit code or missing output files
+as a smoke-test failure.
+
 ## 7. Full Empirical Rerun In A Disposable Clone
 
 Use a disposable clone or branch for the full empirical rerun. These commands
@@ -276,7 +285,7 @@ git diff -- results/dsh_validation paper/tables paper/figures paper/final_paper_
 Expected result:
 
 - tracked summary/report/table/figure changes are explainable
-- ignored checkpoint/raw/smoke/bundle outputs are not staged
+- ignored checkpoint/raw/smoke outputs are not staged
 - no heavy artifacts are added back to Git
 
 Only commit regenerated small evidence after reviewing the diffs. Upload new
