@@ -19,11 +19,11 @@ After review, run the wrapper:
 python3 tools/reproduce_final_paper_outputs.py
 ```
 
-If bundle generation is unavailable or known to fail locally, skip only that
-step:
+The generated validation bundle is external/archive material and is skipped by
+default. To create a local ignored bundle copy, run:
 
 ```bash
-python3 tools/reproduce_final_paper_outputs.py --skip-bundle
+python3 tools/reproduce_final_paper_outputs.py --include-bundle
 ```
 
 The wrapper prints each command before running it.

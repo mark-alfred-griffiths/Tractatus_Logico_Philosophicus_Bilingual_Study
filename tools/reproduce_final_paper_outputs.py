@@ -82,7 +82,7 @@ def fail_if_removed_artifact_is_canonical() -> None:
         raise SystemExit("Refusing to use removed/noncanonical random-batching paths as canonical evidence:\n" + "\n".join(failures))
 
 
-def build_steps(skip_bundle: bool) -> list[Step]:
+def build_steps(include_bundle: bool) -> list[Step]:
     env = {"PYTHONDONTWRITEBYTECODE": "1"}
     steps = [
         Step("Build canonical reports", ("python3", "tools/build_canonical_reports.py"), env),
@@ -93,7 +93,7 @@ def build_steps(skip_bundle: bool) -> list[Step]:
         Step("Build final-paper manifest", ("python3", "tools/build_final_paper_manifest.py"), env),
         Step("Validate final-paper manifest", ("python3", "tools/validate_final_paper_manifest.py"), env),
     ]
-    if not skip_bundle:
+    if include_bundle:
         steps.append(Step("Create DSH validation bundle", ("python3", "tools/create_dsh_validation_bundle.py"), env))
     return steps
 
@@ -124,10 +124,11 @@ def run_steps(steps: list[Step], dry_run: bool) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Reproduce final-paper outputs without retraining.")
     parser.add_argument("--dry-run", action="store_true", help="Print commands without running them.")
-    parser.add_argument("--skip-bundle", action="store_true", help="Skip DSH validation bundle generation.")
+    parser.add_argument("--skip-bundle", action="store_true", help="Accepted for compatibility; bundle generation is skipped unless --include-bundle is supplied.")
+    parser.add_argument("--include-bundle", action="store_true", help="Also create the local ignored validation bundle copy.")
     args = parser.parse_args()
 
-    steps = build_steps(skip_bundle=args.skip_bundle)
+    steps = build_steps(include_bundle=args.include_bundle and not args.skip_bundle)
     validate_step_safety(steps)
     fail_if_removed_artifact_is_canonical()
     run_steps(steps, dry_run=args.dry_run)

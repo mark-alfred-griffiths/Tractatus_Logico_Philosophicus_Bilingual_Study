@@ -33,6 +33,12 @@ results/dsh_validation/phase4_case_studies/
 results/dsh_validation/canonical_reports/
 ```
 
+GitHub is kept as the clean code plus small-evidence repository. Heavy retained
+artifacts such as checkpoints, raw/per-proposition parquet outputs, smoke
+outputs, and generated validation-bundle copies are external release/archive
+artifacts listed in [docs/heavy_artifacts_manifest.csv](docs/heavy_artifacts_manifest.csv)
+and described in [docs/heavy_artifacts.md](docs/heavy_artifacts.md).
+
 ## Safe Reproduction
 
 Use the final-paper wrapper for non-training reproduction and verification:
@@ -44,7 +50,8 @@ python3 tools/reproduce_final_paper_outputs.py --dry-run
 Review the printed command list, then run the wrapper without `--dry-run` if
 you want to regenerate the paper-facing derivatives from retained evidence. The
 wrapper verifies or rebuilds canonical reports, paper tables, figure manifests,
-final-paper manifests, and the validation bundle. It does not retrain models.
+and final-paper manifests. It does not retrain models or restore external
+checkpoint/raw artifacts.
 
 ## Deliberate Retraining
 

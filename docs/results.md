@@ -37,8 +37,12 @@ results/dsh_validation/canonical_reports/canonical_report_index.md
 The validation bundle is:
 
 ```text
-results/dsh_validation/dsh_validation_bundle.zip
+docs/heavy_artifacts_manifest.csv
 ```
+
+The validation bundle zip, raw parquet outputs, smoke outputs, and checkpoints
+are external archive artifacts rather than tracked Git files. See
+[heavy_artifacts.md](heavy_artifacts.md).
 
 ## Paper-Facing Derivatives
 

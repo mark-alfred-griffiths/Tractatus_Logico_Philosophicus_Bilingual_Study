@@ -169,7 +169,6 @@ def build_rows() -> list[dict[str, str]]:
     for path in [
         ROOT / "results" / "dsh_validation" / "CANONICAL_VERIFICATION_REPORT.md",
         ROOT / "results" / "dsh_validation" / "canonical_verification.json",
-        ROOT / "results" / "dsh_validation" / "dsh_validation_bundle.zip",
     ]:
         artifact_type = {
             ".md": "canonical_verification_report",
@@ -188,6 +187,19 @@ def build_rows() -> list[dict[str, str]]:
             "python3 tools/verify_canonical_evidence.py",
             "Canonical validation artifact.",
         )
+
+    add(
+        rows,
+        ROOT / "docs" / "heavy_artifacts_manifest.csv",
+        "external_artifact_manifest",
+        "audit_only",
+        "candidate",
+        "external release/archive artifact",
+        "generated from SHA256SUMS before Git history cleanup",
+        "TBD",
+        "manual archive hash and per-file SHA256 verification",
+        "Lists heavy retained artifacts removed from Git history and expected in the external archive.",
+    )
 
     for path in sorted((ROOT / "results" / "dsh_validation" / "canonical_reports").glob("*")):
         if path.is_file():

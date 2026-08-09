@@ -20,12 +20,6 @@ Review the printed command list. Then run:
 python3 tools/reproduce_final_paper_outputs.py
 ```
 
-If you want to skip validation-bundle creation, run:
-
-```bash
-python3 tools/reproduce_final_paper_outputs.py --skip-bundle
-```
-
 The wrapper prints each command before running it. It verifies or regenerates:
 
 ```text
@@ -33,11 +27,21 @@ results/dsh_validation/canonical_reports/
 paper/tables/
 paper/figures/figure_manifest.csv
 paper/final_paper_manifest.csv
-results/dsh_validation/dsh_validation_bundle.zip
 ```
 
 It does not retrain models, overwrite checkpoints, rewrite raw parquet files,
 rewrite latents, or replace retained per-seed metrics.
+
+The generated validation bundle and heavy retained empirical artifacts are
+external release/archive materials, not tracked Git files. To recreate a local
+bundle copy after restoring any needed external artifacts, run:
+
+```bash
+python3 tools/reproduce_final_paper_outputs.py --include-bundle
+```
+
+The resulting `results/dsh_validation/dsh_validation_bundle/` and
+`results/dsh_validation/dsh_validation_bundle.zip` paths are ignored by Git.
 
 ## Narrow Checks
 
@@ -69,6 +73,15 @@ results/dsh_validation/canonical_reports/
 results/dsh_validation/CANONICAL_VERIFICATION_REPORT.md
 results/dsh_validation/canonical_verification.json
 ```
+
+Heavy retained artifacts excluded from Git history are listed in:
+
+```text
+docs/heavy_artifacts_manifest.csv
+```
+
+Restore them from the external archive only when exact checkpoints, raw parquet
+outputs, smoke outputs, or bundle copies are needed.
 
 The retained datasets are:
 
