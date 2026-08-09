@@ -1,48 +1,42 @@
 # Documentation Index
 
+This index is organised for readers of the final manuscript
+`paper/Tractatus_final.docx`.
+
+## Final Paper Route
+
+1. Start with [README](../README.md) for the repository overview.
+2. Read [Paper notes](../paper/PAPER.md) for manuscript-facing files.
+3. Use [Reproduction](reproduction.md) for the safe non-training wrapper and
+   deliberate retraining commands.
+4. Use [Results](results.md) for the Phase 1-4 evidence map.
+5. Use [Repository layout for paper](repository_layout_for_paper.md) for status
+   labels, retained evidence boundaries, and migration policy.
+
+## Current Manifests And Evidence
+
+- [Final paper manifest](../paper/final_paper_manifest.csv)
+- [Figure manifest](../paper/figures/figure_manifest.csv)
+- [Table manifest](../paper/tables/table_manifest.csv)
+- [Canonical verification report](../results/dsh_validation/CANONICAL_VERIFICATION_REPORT.md)
+- [Canonical report index](../results/dsh_validation/canonical_reports/canonical_report_index.md)
+
+The Phase 1-4 outputs under `results/dsh_validation/` are the canonical
+evidence layer for the final paper.
+
+## Method And Data Background
+
 - [Dataset](dataset.md)
 - [Model](model.md)
 - [Experiments](experiments.md)
-- [Results](results.md)
-- [Reproduction](reproduction.md)
+- [Run artifacts](../runs/RUN_ARTIFACTS.md)
+
+## Command Reference
+
 - [Canonical paper reproducibility commands](canonical_paper_reproducibility_commands.md)
 
-## Current Paper State
-
-The repository documentation is current for the canonical paper source. The
-paper has an audit/reproduction entry point for all reported TF-IDF, Jaccard,
-and Euclidean-distance values and for the paper figures, including Figure 7.
-For the complete current pipeline,
-run the commands in [Reproduction](reproduction.md), section
-`Complete Canonical Paper-Output Pipeline`.
-
-The short report-only reproduction command is:
+The current safe entry point remains:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics --figures --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
+python3 tools/reproduce_final_paper_outputs.py --dry-run
 ```
-
-This workflow uses retained artefacts and does not retrain models, overwrite
-`runs/`, or modify canonical manuscript files.
-
-The complete pipeline additionally regenerates summary artefacts under
-`runs/seed_sweeps/*/summaries/`, all `paper/figures/` outputs, and the two
-paper-facing summaries via:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
-```
-
-For the deeper retained-experiment audit used to verify metric definitions,
-same-ID distances, lambda comparisons, latent scale/variance, and child-count
-diagnostics, use:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py
-```
-
-That audit writes to `reports/empirical_audit/` and is separate from the routine
-paper-output reproduction command.

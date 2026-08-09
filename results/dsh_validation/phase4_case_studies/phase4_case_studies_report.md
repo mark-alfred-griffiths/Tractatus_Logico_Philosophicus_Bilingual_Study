@@ -171,3 +171,4 @@ What it merely suggests: the case may be useful for studying how formal position
 What requires human close reading: expository role, argumentative force, translation choices and any philosophical interpretation.
 
 What must not be claimed: latent distance does not establish philosophical dependence, semantic equivalence, anomaly or mistranslation.
+

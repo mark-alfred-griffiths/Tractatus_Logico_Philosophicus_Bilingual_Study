@@ -1,7 +1,0 @@
-candidate_count,comparison,condition,directions,k,mean_jaccard,method,metric_family,mrr_mean,preprocessing,sample_sd,seed_count,source_artifact,top1_mean
-526,,,de_to_en;en_to_de,,,Exact-token Jaccard,Jaccard,0.25393282503948766,"exact model input spans, proposition IDs excluded, 96-token rule",,,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,0.17680608365019013
-,Cross-direction,0.00,,10,0.6239785482292758,,,,,0.008615633545663446,10,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,
-,Within-language,0.00,,10,0.6300564740063741,,,,,0.006216040867439926,10,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,
-,Cross-direction,0.03,,10,0.627034842316659,,,,,0.008580815293578242,10,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,
-,Within-language,0.03,,10,0.63034147558524,,,,,0.0054936672183800725,10,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,
-,Independent sets,Random,,10,0.010328517371861025,,,,,0.023365799086709188,,reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv,

@@ -2,3 +2,22 @@ HAL_JDDH_SUBMISSION_INSTRUCTIONS.txt
 paper/bilingual_structure_latents_in_the_tractatus.pdf
 paper/main.tex
 paper/references.bib
+
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local IDE/editor state
+.idea/
+.vscode/
+
+# OS and temporary files
+.DS_Store
+*.tmp
+*.bak
+~$*.docx
+
+# Local scratch outputs
+tmp/
+scratch/

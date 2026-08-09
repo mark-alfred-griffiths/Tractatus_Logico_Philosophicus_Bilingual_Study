@@ -10,7 +10,7 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib")
 import matplotlib.pyplot as plt
 import torch
 
-DPI = 450
+DPI = 600
 LANGUAGE_COLORS = {"de": "#D55E00", "en": "#0072B2"}
 LANGUAGE_LABELS = {"de": "GER", "en": "ENG"}
 

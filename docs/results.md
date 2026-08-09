@@ -1,84 +1,56 @@
 # Results
 
-Canonical results are generated from repeated-seed sweeps under `runs/seed_sweeps/`.
+The current results layer for `paper/Tractatus_final.docx` is
+`results/dsh_validation/`. It contains retained Phase 1-4 empirical outputs,
+canonical reports, verification files, and the validation bundle.
 
-## Canonical Result Locations
-
-```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
-paper/figures/
-```
-
-## Monolingual Study
-
-The monolingual study is:
+## Canonical Evidence
 
 ```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/
+results/dsh_validation/phase1_ablations/
+results/dsh_validation/phase2_family_holdout/
+results/dsh_validation/phase3_controlled_alignment/
+results/dsh_validation/phase4_case_studies/
 ```
 
-It uses the balanced English split-latent setting with `beta_structure=0.05` across seeds `0..9`.
+Phase roles:
 
-Generate its summary with:
+- Phase 1: retained-corpus ablations.
+- Phase 2: immediate-parent-family holdout.
+- Phase 3: controlled paired-batch bilingual alignment.
+- Phase 4: frozen text-blind case selection.
 
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/summary
-```
-
-## Bilingual Alignment Lambda Sweep
-
-The bilingual study is:
+The main verification files are:
 
 ```text
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/
+results/dsh_validation/CANONICAL_VERIFICATION_REPORT.md
+results/dsh_validation/canonical_verification.json
 ```
 
-It evaluates:
+Compact paper-facing reports are in:
 
 ```text
-lambda_language_alignment = 0.00, 0.03, 0.10, 0.30, 1.00
-seeds = 0..9
+results/dsh_validation/canonical_reports/
+results/dsh_validation/canonical_reports/canonical_report_index.md
 ```
 
-Generate per-lambda summaries with:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-```
-
-## Figures
-
-Canonical paper figures are in `paper/figures/`.
-
-Metric sweep figures use means across seeds with +/- one-standard-deviation error bars:
+The validation bundle is:
 
 ```text
-paper/figures/bilingual_alignment_retrieval_sweep.png
-paper/figures/bilingual_structure_accuracy_sweep.png
-paper/figures/bilingual_retrieval_structure_tradeoff.png
-paper/figures/bilingual_reconstruction_sweep.png
+results/dsh_validation/dsh_validation_bundle.zip
 ```
 
-Representative PCA figures are seed-labeled:
+## Paper-Facing Derivatives
+
+Final manuscript figure and table manifests live under `paper/`:
 
 ```text
-paper/figures/bilingual_latent_pca_language_align003_seed000.png
-paper/figures/bilingual_latent_pca_depth_align003_seed000.png
-paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
+paper/figures/figure_manifest.csv
+paper/tables/table_manifest.csv
+paper/final_paper_manifest.csv
 ```
 
-The paper also includes the family 2.2 Euclidean distance matrix and its source
-data:
+The final figure currently marked as used by the manuscript is:
 
 ```text
 paper/figures/family_case_distance_matrix.png
@@ -86,62 +58,24 @@ paper/figures/family_case_distance_matrix.pdf
 paper/figures/family_case_distance_matrix_data.csv
 ```
 
-Regenerate all canonical figures with:
+Table-ready exports are:
 
-```bash
-python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+```text
+paper/tables/table1_retained_ablations.csv
+paper/tables/table2_lexical_references.csv
+paper/tables/table3_family_holdout.csv
+paper/tables/table4_paired_alignment.csv
+paper/tables/table5_case_study_prompts.csv
 ```
 
-## Complete Canonical Results Regeneration
-
-The paper reports exact-input TF-IDF and Jaccard retrieval baselines, wider
-neighbourhood Jaccard, same-ID and relation Euclidean distances, and the family
-2.2 Euclidean distance matrix for Figure 7. Regenerate the complete current
-results layer without retraining with the pipeline in `docs/reproduction.md`:
+Regenerate or verify these derivatives with:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
-
-PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics --figures --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-
-PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+python3 tools/reproduce_final_paper_outputs.py --dry-run
 ```
-
-The generated `reproduced_values_vs_paper.csv` records the paper value,
-reproduced value, source artefact, and rounded match status for every checked
-TF-IDF, Jaccard, and Euclidean-distance value. The summary writer rebuilds
-`paper/monolingual_results_summary.txt` and
-`paper/bilingual_results_summary.txt`. These are retained-corpus diagnostics,
-not held-out generalisation results.
 
 ## Interpretation Guardrail
 
-The bilingual result is evidence for proposition-level alignment in this small, paired, highly structured Tractatus corpus. It should not be read as proof of a general language-invariant logical manifold.
+The empirical evidence concerns proposition-number-derived structure in this
+small, paired, highly structured Tractatus corpus. It should not be read as
+proof of a general language-invariant logical manifold.

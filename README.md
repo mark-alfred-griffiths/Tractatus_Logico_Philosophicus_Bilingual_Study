@@ -1,74 +1,81 @@
 # Tractatus Structure Latents
 
-This repository explores whether the hierarchical numbering of Wittgenstein's *Tractatus Logico-Philosophicus* can supervise a model toward proposition-structure latents rather than simple text prediction.
+This repository is the companion repository for the empirical work behind
+`paper/Tractatus_final.docx`.
 
-The project does not claim to process logic or to learn general philosophical logic. The implemented supervision comes from formal relations derivable from proposition numbers: parent, depth, next-proposition, child count, and bilingual same-id alignment.
+The project tests whether formal proposition-number relations in Wittgenstein's
+*Tractatus Logico-Philosophicus* can supervise split-latent models toward a
+structure-oriented representation. It does not claim to process logic or learn
+general philosophical logic. The implemented supervision comes from parent,
+depth, next-proposition, child-count, family, and bilingual same-id relations
+derivable from proposition numbers.
 
-The current model family is a split-latent RNN-VAE:
+## Reader Path
 
-```text
-z_text      -> language-conditioned text reconstruction
-z_structure -> hierarchy prediction and cross-language structure alignment
-```
-
-The canonical experiments are now repeated-seed sweeps. Generated run artifacts should live under `runs/seed_sweeps/`, not as loose root-level files in `runs/`.
-
-## Canonical Experiments
-
-```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/
-  English-only balanced split-latent sweep over seeds 0..9.
-
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/
-  German/English alignment-strength sweep over lambda values and seeds 0..9.
-```
-
-The bilingual lambda sweep covers:
+For the final paper, start here:
 
 ```text
-lambda_language_alignment = 0.00, 0.03, 0.10, 0.30, 1.00
+paper/Tractatus_final.docx
+paper/final_paper_manifest.csv
+paper/figures/figure_manifest.csv
+paper/tables/table_manifest.csv
+results/dsh_validation/CANONICAL_VERIFICATION_REPORT.md
 ```
 
-Each generated study folder uses the same artifact layout:
+The canonical evidence layer is `results/dsh_validation/`, organised as Phase
+1-4 retained outputs:
 
 ```text
-checkpoints/   model checkpoints and vocab files
-logs/          training logs
-metrics/       per-seed evaluation JSON
-latents/       exported structure latent tensors and ids
-summaries/     aggregate CSV, JSON, Markdown, and plots
-manifest.json  fixed study configuration
+results/dsh_validation/phase1_ablations/
+results/dsh_validation/phase2_family_holdout/
+results/dsh_validation/phase3_controlled_alignment/
+results/dsh_validation/phase4_case_studies/
+results/dsh_validation/canonical_reports/
 ```
+
+## Safe Reproduction
+
+Use the final-paper wrapper for non-training reproduction and verification:
+
+```bash
+python3 tools/reproduce_final_paper_outputs.py --dry-run
+```
+
+Review the printed command list, then run the wrapper without `--dry-run` if
+you want to regenerate the paper-facing derivatives from retained evidence. The
+wrapper verifies or rebuilds canonical reports, paper tables, figure manifests,
+final-paper manifests, and the validation bundle. It does not retrain models.
+
+## Deliberate Retraining
+
+Retraining is separate from the default paper reproduction path. The empirical
+phase commands are documented in [docs/reproduction.md](docs/reproduction.md)
+and should be run deliberately because they can write checkpoints, logs, raw
+outputs, per-seed metrics, and figures under `results/dsh_validation/`.
 
 ## Documentation
 
+- [Documentation index](docs/DOCUMENTATION.md)
+- [Reproduction](docs/reproduction.md)
+- [Results](docs/results.md)
+- [Paper notes](paper/PAPER.md)
+- [Repository layout for paper](docs/repository_layout_for_paper.md)
 - [Dataset](docs/dataset.md)
 - [Model](docs/model.md)
 - [Experiments](docs/experiments.md)
-- [Results](docs/results.md)
-- [Reproduction](docs/reproduction.md)
-- [Documentation index](docs/DOCUMENTATION.md)
-- [Paper notes](paper/PAPER.md)
 - [Run artifacts](runs/RUN_ARTIFACTS.md)
-- [Seed sweeps](runs/seed_sweeps/SEED_SWEEPS.md)
 
 ## Repository Layout
 
 ```text
+paper/                   manuscript, final manifest, final figures, table exports, and paper notes
+results/dsh_validation/  Phase 1-4 canonical evidence, reports, and bundles
 tractatus_structure_latents/
-  data/                  dataset builder and Tractatus JSON datasets
-  models/                encoder, decoder, VAE, split-latent VAE, dynamics module
-  training/              VAE training CLI
-  evaluation/            structure metrics, sweep analysis, and latent visualisation
-  active_inference/      exploratory prototype, not part of canonical sweeps
-  scripts/               dataset construction and sweep runner CLIs
-runs/                    run artifact documentation and generated experiment outputs
-runs/seed_sweeps/        canonical repeated-seed study artifacts
-paper/                   plain-text paper and generated figures
-docs/                    project documentation
+                         importable package for data, model, training, and evaluation code
+tools/                   empirical phase CLIs, report builders, validators, and wrappers
+tests/                   narrow validation and regression tests
+docs/                    reader and reproduction documentation
 ```
-
-The canonical Python package path is `tractatus_structure_latents/`.
 
 ## Setup
 
@@ -78,235 +85,14 @@ Install dependencies:
 python3 -m pip install -r requirements.txt
 ```
 
-Build or refresh the English-only dataset:
-
-```bash
-python3 -m tractatus_structure_latents.scripts.build_dataset \
-  --output tractatus_structure_latents/data/tractatus.json \
-  --languages en
-```
-
-Build or refresh the bilingual German/English dataset:
-
-```bash
-python3 -m tractatus_structure_latents.scripts.build_dataset \
-  --output tractatus_structure_latents/data/tractatus_bilingual.json \
-  --languages en,de
-```
-
-## Run All Canonical Sweeps
-
-Run the full monolingual seed sweep:
-
-```bash
-for seed in {0..9}; do
-  seed_name=$(printf 'seed%03d' "$seed")
-
-  python3 -m tractatus_structure_latents.training.train_vae \
-    --data tractatus_structure_latents/data/tractatus.json \
-    --split-latent \
-    --text-latent-dim 24 \
-    --structure-latent-dim 8 \
-    --epochs 80 \
-    --batch-size 32 \
-    --beta 0.01 \
-    --beta-text 0.01 \
-    --beta-structure 0.05 \
-    --lambda-parent 0.2 \
-    --lambda-depth 0.1 \
-    --lambda-next 0.2 \
-    --lambda-child 0.02 \
-    --lr 0.001 \
-    --seed "$seed" \
-    --out "runs/seed_sweeps/monolingual_split_24_8_reg005/checkpoints/${seed_name}.pt" \
-    2>&1 | tee "runs/seed_sweeps/monolingual_split_24_8_reg005/logs/${seed_name}.train.log"
-
-  python3 -m tractatus_structure_latents.evaluation.evaluate_structure \
-    --data tractatus_structure_latents/data/tractatus.json \
-    --checkpoint "runs/seed_sweeps/monolingual_split_24_8_reg005/checkpoints/${seed_name}.pt" \
-    --batch-size 64 \
-    --latent-part structure \
-    --export-latents "runs/seed_sweeps/monolingual_split_24_8_reg005/latents/${seed_name}_structure.pt" \
-    > "runs/seed_sweeps/monolingual_split_24_8_reg005/metrics/${seed_name}.metrics.json"
-done
-```
-
-Run the full bilingual alignment lambda sweep:
-
-```bash
-python3 -m tractatus_structure_latents.scripts.run_bilingual_alignment_seed_sweep \
-  --out-root runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --lambdas 0.00,0.03,0.10,0.30,1.00 \
-  --seeds 0,1,2,3,4,5,6,7,8,9 \
-  --skip-existing
-```
-
-This runs `50` bilingual trainings: `5` alignment strengths times `10` seeds.
-
-## Generate Results
-
-Aggregate the monolingual sweep:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/summary
-```
-
-Aggregate each bilingual alignment-strength folder, if you want per-lambda CSV/Markdown summaries:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-```
-
-Generate paper figures. Metric sweep figures use means across seeds `0..9` with +/- one-standard-deviation error bars. PCA figures use a representative trained model and include the seed in the title and filename.
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json
-```
-
-This recreates metric sweep figures:
+The retained datasets used by the current evidence layer are:
 
 ```text
-paper/figures/bilingual_alignment_retrieval_sweep.png
-paper/figures/bilingual_structure_accuracy_sweep.png
-paper/figures/bilingual_retrieval_structure_tradeoff.png
-paper/figures/bilingual_reconstruction_sweep.png
+tractatus_structure_latents/data/tractatus.json
+tractatus_structure_latents/data/tractatus_bilingual.json
 ```
 
-It also creates representative PCA figures such as:
-
-```text
-paper/figures/bilingual_latent_pca_language_align003_seed000.png
-paper/figures/bilingual_latent_pca_depth_align003_seed000.png
-paper/figures/monolingual_latent_pca_depth_reg005_seed000.png
-```
-
-## Canonical Paper Reproducibility
-
-The current paper uses the canonical retained experiments and has a complete
-regeneration path for paper-facing summaries, all figures, and reported
-TF-IDF, Jaccard, and Euclidean-distance values, including the family 2.2 /
-Figure 7 Euclidean distance matrix.
-
-Complete canonical paper-output pipeline:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
-
-PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics --figures --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-
-PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
-```
-
-The first two commands regenerate summary artefacts under
-`runs/seed_sweeps/*/summaries/` from retained `seed*.metrics.json` files. They
-do not retrain models or modify checkpoints, cached latents, or metric JSON
-files. The figure command regenerates all `paper/figures/` outputs, including
-Figure 7. The paper reproduction command writes TF-IDF, Jaccard, Euclidean,
-same-ID, relation-distance, and figure-manifest artefacts under the report
-directory. The final command rebuilds:
-
-```text
-paper/monolingual_results_summary.txt
-paper/bilingual_results_summary.txt
-```
-
-For report-only validation without touching `paper/figures/` or
-`runs/seed_sweeps/*/summaries/`, use:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics \
-  --figures \
-  --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-```
-
-The command writes CSV/JSON manifests and regenerated figure files under the
-report directory. It does not retrain models or modify the canonical
-manuscript, bibliography, PDF, or paper figure files. The reported metrics
-remain retained-corpus diagnostics from the canonical seed sweeps and verified
-audit artefacts.
-
-For a deeper retained-experiment audit of metric definitions, same-ID distance,
-lambda comparisons, latent scale/variance, and child-count diagnostics, run:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py
-```
-
-This writes to `reports/empirical_audit/` and is separate from the routine
-paper-output regeneration path.
-
-## Visualise Representative Latents
-
-Monolingual depth PCA for seed `000`:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.visualise_latents \
-  --latents runs/seed_sweeps/monolingual_split_24_8_reg005/latents/seed000_structure.pt \
-  --ids runs/seed_sweeps/monolingual_split_24_8_reg005/latents/seed000_structure.ids.json \
-  --data tractatus_structure_latents/data/tractatus.json \
-  --method pca \
-  --colour-by depth \
-  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/seed000_pca_depth.png
-```
-
-Bilingual language PCA for lambda `0.03`, seed `000`:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.visualise_latents \
-  --latents runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/latents/seed000_structure.pt \
-  --ids runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/latents/seed000_structure.ids.json \
-  --data tractatus_structure_latents/data/tractatus_bilingual.json \
-  --method pca \
-  --colour-by language \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003/summaries/seed000_pca_language.png
-```
-
-## Cleanup Policy
-
-The root of `runs/` should not accumulate loose generated checkpoints or metrics. Keep canonical generated outputs under:
-
-```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/
-```
+Dataset rebuild commands are documented in [docs/reproduction.md](docs/reproduction.md).
 
 ## License
 
@@ -316,4 +102,5 @@ This repository uses a mixed-license structure:
 - Documentation and paper text are licensed under [CC BY 4.0](LICENSE-DOCS.md).
 - Tractatus-derived text/data are covered by the source-text notice in [DATA_NOTICE.md](DATA_NOTICE.md).
 
-The repository does not claim copyright over the underlying public-domain Tractatus text.
+The repository does not claim copyright over the underlying public-domain
+Tractatus text.

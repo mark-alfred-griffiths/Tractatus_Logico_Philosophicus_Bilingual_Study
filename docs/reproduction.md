@@ -2,17 +2,124 @@
 
 Run commands from the repository root.
 
-## 1. Install Dependencies
+## Default Final-Paper Path
+
+The current manuscript target is `paper/Tractatus_final.docx`. The default
+reproduction path is non-training and works from retained evidence under
+`results/dsh_validation/`.
+
+Start with a dry run:
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3 tools/reproduce_final_paper_outputs.py --dry-run
 ```
 
-Required core packages include PyTorch, Matplotlib, scikit-learn, and UMAP.
+Review the printed command list. Then run:
 
-## 2. Build Datasets
+```bash
+python3 tools/reproduce_final_paper_outputs.py
+```
 
-Build the English-only dataset:
+If you want to skip validation-bundle creation, run:
+
+```bash
+python3 tools/reproduce_final_paper_outputs.py --skip-bundle
+```
+
+The wrapper prints each command before running it. It verifies or regenerates:
+
+```text
+results/dsh_validation/canonical_reports/
+paper/tables/
+paper/figures/figure_manifest.csv
+paper/final_paper_manifest.csv
+results/dsh_validation/dsh_validation_bundle.zip
+```
+
+It does not retrain models, overwrite checkpoints, rewrite raw parquet files,
+rewrite latents, or replace retained per-seed metrics.
+
+## Narrow Checks
+
+Use these checks when editing paper-facing manifests, figures, tables, or the
+safe wrapper:
+
+```bash
+python3 tools/validate_final_paper_manifest.py
+python3 tools/validate_paper_figure_manifest.py
+python3 -m unittest tests/test_paper_tables.py
+```
+
+For the canonical evidence layer itself:
+
+```bash
+python3 tools/verify_canonical_evidence.py
+```
+
+## Evidence Inputs
+
+The current canonical evidence layer is:
+
+```text
+results/dsh_validation/phase1_ablations/
+results/dsh_validation/phase2_family_holdout/
+results/dsh_validation/phase3_controlled_alignment/
+results/dsh_validation/phase4_case_studies/
+results/dsh_validation/canonical_reports/
+results/dsh_validation/CANONICAL_VERIFICATION_REPORT.md
+results/dsh_validation/canonical_verification.json
+```
+
+The retained datasets are:
+
+```text
+tractatus_structure_latents/data/tractatus.json
+tractatus_structure_latents/data/tractatus_bilingual.json
+```
+
+## Deliberate Empirical Reruns
+
+The commands below rerun empirical phases and can write checkpoints, logs, raw
+outputs, per-seed metrics, reports, and figures. They are deliberate training
+or phase-execution commands, not the default final-paper reproduction path.
+
+Phase 1 retained-corpus ablations:
+
+```bash
+python3 tools/phase1_ablations.py run --skip-existing
+```
+
+Phase 2 immediate-parent-family holdout:
+
+```bash
+python3 tools/phase2_family_holdout.py run --skip-existing
+```
+
+Phase 3 controlled paired-batch bilingual alignment:
+
+```bash
+python3 tools/phase3_controlled_alignment.py run --batching paired --conditions full_model --skip-existing
+python3 tools/phase3_controlled_alignment.py successor-control --skip-existing
+```
+
+Phase 4 frozen text-blind case selection:
+
+```bash
+python3 tools/phase4_case_studies.py run
+```
+
+After deliberate reruns, rebuild and verify paper-facing reports:
+
+```bash
+python3 tools/build_canonical_reports.py
+python3 tools/verify_canonical_evidence.py
+python3 tools/export_paper_tables.py
+python3 tools/build_final_paper_manifest.py
+```
+
+## Dataset Rebuilds
+
+Dataset rebuilds are separate from the default paper wrapper:
 
 ```bash
 python3 -m tractatus_structure_latents.scripts.build_dataset \
@@ -20,189 +127,8 @@ python3 -m tractatus_structure_latents.scripts.build_dataset \
   --languages en
 ```
 
-Build the bilingual German/English dataset:
-
 ```bash
 python3 -m tractatus_structure_latents.scripts.build_dataset \
   --output tractatus_structure_latents/data/tractatus_bilingual.json \
   --languages en,de
 ```
-
-## 3. Run Monolingual Seed Sweep
-
-```bash
-for seed in {0..9}; do
-  seed_name=$(printf 'seed%03d' "$seed")
-
-  python3 -m tractatus_structure_latents.training.train_vae \
-    --data tractatus_structure_latents/data/tractatus.json \
-    --split-latent \
-    --text-latent-dim 24 \
-    --structure-latent-dim 8 \
-    --epochs 80 \
-    --batch-size 32 \
-    --beta 0.01 \
-    --beta-text 0.01 \
-    --beta-structure 0.05 \
-    --lambda-parent 0.2 \
-    --lambda-depth 0.1 \
-    --lambda-next 0.2 \
-    --lambda-child 0.02 \
-    --lr 0.001 \
-    --seed "$seed" \
-    --out "runs/seed_sweeps/monolingual_split_24_8_reg005/checkpoints/${seed_name}.pt" \
-    2>&1 | tee "runs/seed_sweeps/monolingual_split_24_8_reg005/logs/${seed_name}.train.log"
-
-  python3 -m tractatus_structure_latents.evaluation.evaluate_structure \
-    --data tractatus_structure_latents/data/tractatus.json \
-    --checkpoint "runs/seed_sweeps/monolingual_split_24_8_reg005/checkpoints/${seed_name}.pt" \
-    --batch-size 64 \
-    --latent-part structure \
-    --export-latents "runs/seed_sweeps/monolingual_split_24_8_reg005/latents/${seed_name}_structure.pt" \
-    > "runs/seed_sweeps/monolingual_split_24_8_reg005/metrics/${seed_name}.metrics.json"
-done
-```
-
-## 4. Run Bilingual Alignment Lambda Sweep
-
-```bash
-python3 -m tractatus_structure_latents.scripts.run_bilingual_alignment_seed_sweep \
-  --out-root runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --lambdas 0.00,0.03,0.10,0.30,1.00 \
-  --seeds 0,1,2,3,4,5,6,7,8,9 \
-  --skip-existing
-```
-
-This runs `50` bilingual trainings.
-
-## 5. Generate Summaries
-
-Monolingual summary:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/summary
-```
-
-Per-lambda bilingual summaries:
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-```
-
-## 6. Generate Canonical Sweep Figures
-
-```bash
-python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
-```
-
-Metric sweep figures show means across seeds `0..9` with +/- one-standard-deviation error bars. PCA figures use representative seed `0` and include seed labels in titles and filenames. The command also regenerates the family 2.2 / Figure 7 Euclidean distance matrix from retained figure data.
-
-## 7. Complete Canonical Paper-Output Pipeline
-
-Run this sequence to regenerate the complete current paper-output layer from
-retained artefacts. It refreshes summary artefacts under
-`runs/seed_sweeps/*/summaries/`, all paper figures, paper metric/statistic
-CSVs, and the human-readable paper summaries. It does not retrain models or
-modify checkpoints, cached latents, or `seed*.metrics.json`.
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
-
-PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics --figures --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-
-PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
-```
-
-The final command writes:
-
-```text
-paper/monolingual_results_summary.txt
-paper/bilingual_results_summary.txt
-```
-
-## 8. Reproduce Paper Values And Figures For Audit Only
-
-The manuscript uses the retained experiments above. Do not retrain the
-published sweeps to reproduce the paper values. Instead, reproduce the reported
-TF-IDF, Jaccard, Euclidean-distance, same-ID, relation-distance, and Figure 7
-source values with:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics \
-  --figures \
-  --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-```
-
-Outputs include:
-
-```text
-reports/paper_reproducibility/reproduced/reproduced_tfidf_values.csv
-reports/paper_reproducibility/reproduced/reproduced_jaccard_values.csv
-reports/paper_reproducibility/reproduced/reproduced_euclidean_distances.csv
-reports/paper_reproducibility/reproduced/reproduced_values_vs_paper.csv
-reports/paper_reproducibility/reproduced/reproduced_figure_manifest.csv
-reports/paper_reproducibility/reproduced/figures/family_case_distance_matrix_data.csv
-```
-
-The script writes under the requested output directory and does not modify
-`runs/`, `paper/main.tex`, `paper/references.bib`, PDFs, or canonical paper
-figure files.
-
-## 9. Optional Empirical Audit
-
-For a deeper audit of the retained experiments, including alignment-loss
-definitions, same-ID distance, paired lambda comparisons, latent scale/variance,
-and child-count diagnostics, run:
-
-```bash
-PYTHONDONTWRITEBYTECODE=1 python3 tools/empirical_audit.py
-PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests/test_empirical_audit.py
-```
-
-This audit writes machine-readable outputs and a Markdown report under:
-
-```text
-reports/empirical_audit/
-```
-
-It is not part of the routine paper-output regeneration path. It loads retained
-artefacts and checkpoints for verification only; it does not retrain models or
-modify canonical experiment outputs.

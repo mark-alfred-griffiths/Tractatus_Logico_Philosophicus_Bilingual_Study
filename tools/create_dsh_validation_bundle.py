@@ -49,8 +49,8 @@ PHASES = [
     Phase(
         "Phase 3",
         RESULTS / "phase3_controlled_alignment",
-        "Controlled paired-batch bilingual alignment sweep and random-batch comparator.",
-        "paired full_model lambda 0.00, 0.03, 0.10, 0.30, 1.00; paired no_successor same grid; random full_model lambda 0.00, 0.03",
+        "Controlled paired-batch bilingual alignment sweep.",
+        "paired full_model lambda 0.00, 0.03, 0.10, 0.30, 1.00; paired no_successor same grid",
         "0-9",
         "Pair coverage was 100%; paired full_model Top-1 increased from 0.9443 +/- 0.0100 at lambda 0.00 to 0.9959 +/- 0.0032 at lambda 1.00.",
     ),
@@ -112,7 +112,9 @@ CONFIG_FILES = [
     "phase2_family_holdout/phase2_config_manifest.json",
     "phase2_family_holdout/configs",
     "phase2_family_holdout/ids",
-    "phase3_controlled_alignment/configs",
+    "phase3_controlled_alignment/configs/paired_full_model.json",
+    "phase3_controlled_alignment/configs/paired_no_successor.json",
+    "phase3_controlled_alignment/configs/no_successor_expansion_decision.json",
     "phase4_case_studies/data/case_selection_config.json",
     "phase4_case_studies/data/manifest_freeze.json",
 ]
@@ -120,15 +122,27 @@ CONFIG_FILES = [
 COMMAND_FILES = [
     "phase1_ablations/phase1_commands.sh",
     "phase2_family_holdout/phase2_commands.sh",
-    "phase3_controlled_alignment/phase3_commands.sh",
     "phase4_case_studies/phase4_commands.sh",
 ]
 
 FIGURE_DIRS = [
     "phase1_ablations/figures",
     "phase2_family_holdout/figures",
-    "phase3_controlled_alignment/figures",
+    "phase3_controlled_alignment/figures/retrieval_across_lambda.png",
+    "phase3_controlled_alignment/figures/formal_parent_accuracy_across_lambda.png",
+    "phase3_controlled_alignment/figures/formal_depth_accuracy_across_lambda.png",
+    "phase3_controlled_alignment/figures/formal_successor_accuracy_across_lambda.png",
+    "phase3_controlled_alignment/figures/same_id_distance_across_lambda.png",
+    "phase3_controlled_alignment/figures/alignment_loss_trajectories.png",
+    "phase3_controlled_alignment/figures/structure_mean_norm_across_lambda.png",
+    "phase3_controlled_alignment/figures/posterior_variance_across_lambda.png",
     "phase4_case_studies/figures",
+]
+
+NONCANONICAL_MARKERS = [
+    "random_full_model",
+    "paired_versus_random",
+    "bilingual_alignment_lambda_sweep",
 ]
 
 
@@ -158,13 +172,37 @@ def copy_artifact(relative: str, target_dir: Path) -> list[Path]:
     phase_name = source.relative_to(RESULTS).parts[0]
     destination = target_dir / phase_name / source.name
     if source.is_dir():
-        shutil.copytree(source, destination)
-        copied.extend(path for path in destination.rglob("*") if path.is_file())
+        for path in sorted(source.rglob("*")):
+            if not path.is_file():
+                continue
+            relative_source = path.relative_to(RESULTS)
+            if is_noncanonical_removed_artifact(relative_source):
+                continue
+            file_destination = destination / path.relative_to(source)
+            file_destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, file_destination)
+            copied.append(file_destination)
     else:
+        if is_noncanonical_removed_artifact(source.relative_to(RESULTS)):
+            return []
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, destination)
         copied.append(destination)
     return copied
+
+
+def is_noncanonical_removed_artifact(relative: Path) -> bool:
+    text = relative.as_posix()
+    return any(marker in text for marker in NONCANONICAL_MARKERS)
+
+
+def allows_noncanonical_marker_text(relative: Path) -> bool:
+    """Allow marker text only where it records ambient provenance, not evidence."""
+    text = relative.as_posix()
+    return text in {
+        "configs/phase1_ablations/phase1_config_manifest.json",
+        "configs/phase2_family_holdout/phase2_config_manifest.json",
+    }
 
 
 def write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> None:
@@ -460,6 +498,26 @@ Reviewers should use the original phase verification reports for independent rec
     (BUNDLE / "verification_index.md").write_text(verification, encoding="utf-8")
 
 
+def write_canonical_command_manifest() -> Path:
+    path = BUNDLE / "commands" / "phase3_controlled_alignment" / "phase3_canonical_commands.sh"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env bash",
+                "set -euo pipefail",
+                "",
+                "python3 tools/phase3_controlled_alignment.py run --batching paired --conditions full_model --skip-existing",
+                "python3 tools/phase3_controlled_alignment.py successor-control --skip-existing",
+                "python3 tools/phase3_controlled_alignment.py verify",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
 def copy_all_artifacts() -> list[Path]:
     copied: list[Path] = []
     groups = [
@@ -517,6 +575,23 @@ def verify_bundle() -> None:
         raise SystemExit(f"missing required bundle artifacts: {missing}")
     if not ZIP_PATH.exists():
         raise SystemExit(f"zip archive was not created: {ZIP_PATH}")
+    noncanonical = [path for path in BUNDLE.rglob("*") if path.is_file() and is_noncanonical_removed_artifact(path.relative_to(BUNDLE))]
+    if noncanonical:
+        raise SystemExit(f"canonical bundle contains removed/noncanonical artifacts: {[str(path.relative_to(BUNDLE)) for path in noncanonical[:20]]}")
+    noncanonical_content = []
+    for path in BUNDLE.rglob("*"):
+        relative = path.relative_to(BUNDLE)
+        if allows_noncanonical_marker_text(relative):
+            continue
+        if path.is_file() and path.suffix.lower() in {".csv", ".json", ".md", ".sh", ".txt"}:
+            try:
+                text = path.read_text(encoding="utf-8")
+            except UnicodeDecodeError:
+                continue
+            if any(marker in text for marker in NONCANONICAL_MARKERS):
+                noncanonical_content.append(path)
+    if noncanonical_content:
+        raise SystemExit(f"canonical bundle contains removed/noncanonical content markers: {[str(path.relative_to(BUNDLE)) for path in noncanonical_content[:20]]}")
     with zipfile.ZipFile(ZIP_PATH) as archive:
         names = set(archive.namelist())
     for item in required:
@@ -533,6 +608,7 @@ def main() -> None:
     commit_hash = run_git(["rev-parse", "HEAD"])
     ensure_clean_bundle_root()
     copied = copy_all_artifacts()
+    copied.append(write_canonical_command_manifest())
     write_publication_claims_matrix()
     write_experiment_inventory(commit_hash)
     write_markdown_files(commit_hash, branch, len(copied))

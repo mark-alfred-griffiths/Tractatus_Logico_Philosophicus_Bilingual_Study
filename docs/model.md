@@ -209,9 +209,5 @@ lambda_child = 0.02
 
 ## Canonical Artifacts
 
-```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/
-```
-
-Each study stores checkpoints, logs, metrics, exported latents, summaries, and a `manifest.json` under its own folder.
+Current retained empirical artifacts for the final paper live under
+`results/dsh_validation/`.

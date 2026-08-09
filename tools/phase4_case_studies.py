@@ -589,7 +589,7 @@ def plot_case_figures(manifest: pd.DataFrame, raw_df: pd.DataFrame, out_root: Pa
         plt.xlabel("seed")
         plt.ylabel("Mean same-ID distance")
         plt.tight_layout()
-        plt.savefig(out_root / "figures" / f"{key}_same_id_distance_by_seed.png", dpi=200)
+        plt.savefig(out_root / "figures" / f"{key}_same_id_distance_by_seed.png", dpi=600)
         plt.close()
 
 
@@ -930,7 +930,7 @@ def verify(args: argparse.Namespace) -> None:
         raise AssertionError(f"Expected {len(manifest)} dossiers, found {dossier_count}.")
     checks.append("One dossier exists for every selected manifest row.")
     tracked_diff = git_output(["diff", "--name-only"]).splitlines()
-    forbidden_diff = [path for path in tracked_diff if path in {"paper/main.tex", "paper/references.bib"} or path.startswith("paper/") or path.startswith("runs/seed_sweeps/")]
+    forbidden_diff = [path for path in tracked_diff if path in {"paper/main.tex", "paper/references.bib"} or path.startswith("paper/")]
     if forbidden_diff:
         raise AssertionError(f"Protected manuscript/canonical paths changed: {forbidden_diff}")
     checks.append("No tracked diffs touch manuscript files or canonical run outputs.")

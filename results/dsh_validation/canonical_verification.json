@@ -1,0 +1,105 @@
+{
+  "checks": [
+    {
+      "detail": "526",
+      "name": "corpus proposition count",
+      "ok": true
+    },
+    {
+      "detail": "1052",
+      "name": "corpus row count",
+      "ok": true
+    },
+    {
+      "detail": "0",
+      "name": "no duplicate proposition IDs",
+      "ok": true
+    },
+    {
+      "detail": "all rows have en/de text",
+      "name": "bilingual pairing completeness",
+      "ok": true
+    },
+    {
+      "detail": "full_model,no_successor,parent_depth_only,reconstruction_only,shuffled_joint_targets,shuffled_no_successor,successor_only",
+      "name": "Phase 1 condition completeness",
+      "ok": true
+    },
+    {
+      "detail": "70",
+      "name": "Phase 1 seed completeness",
+      "ok": true
+    },
+    {
+      "detail": "full_model,no_successor,reconstruction_only",
+      "name": "Phase 2 condition completeness",
+      "ok": true
+    },
+    {
+      "detail": "526",
+      "name": "fold ID uniqueness",
+      "ok": true
+    },
+    {
+      "detail": "0",
+      "name": "fold family integrity",
+      "ok": true
+    },
+    {
+      "detail": "45",
+      "name": "Phase 2 seed-fold completeness",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "Phase 3 canonical IDs only",
+      "ok": true
+    },
+    {
+      "detail": "no removed/noncanonical markers in seed table",
+      "name": "Phase 3 noncanonical exclusion",
+      "ok": true
+    },
+    {
+      "detail": "observed=100 expected=100",
+      "name": "Phase 3 lambda-seed completeness",
+      "ok": true
+    },
+    {
+      "detail": "100",
+      "name": "Phase 3 pair coverage",
+      "ok": true
+    },
+    {
+      "detail": "c4c6ac3c5473f47d181fdb8f1e155eab2d938a9bd674f2435c7fb48bc29e5ffc",
+      "name": "Phase 4 hash unchanged",
+      "ok": true
+    },
+    {
+      "detail": "2.13,2.19,3.31,4.31,4.431,5.5,5.524,5.63,5.64,6.241",
+      "name": "Phase 4 selected cases unchanged",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "canonical reports present",
+      "ok": true
+    },
+    {
+      "detail": "phase3 paired table checked",
+      "name": "canonical report excludes noncanonical records",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "canonical export excludes noncanonical records",
+      "ok": true
+    },
+    {
+      "detail": "",
+      "name": "required output files exist",
+      "ok": true
+    }
+  ],
+  "ok": true
+}

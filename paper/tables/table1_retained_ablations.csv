@@ -1,0 +1,14 @@
+condition,metric,mean,sample_sd,seed_count
+full_model,structure_cross_language_top1,0.9360266159695818,0.012792933111815688,10
+full_model,structure_cross_language_mrr,0.9656844106463879,0.007122777083054651,10
+full_model,text_cross_language_top1,0.009600760456273765,0.004166395582655638,10
+full_model,structure_sibling_vs_unrelated_contrast,4.036074582813768,0.06323882761902588,10
+full_model,parent_accuracy,0.8596007604562738,0.008973818131609206,10
+full_model,depth_accuracy,0.9633079847908745,0.01203388515001078,10
+full_model,successor_top1,0.61606463878327,0.02255009849057182,10
+successor_only,structure_cross_language_top1,0.9943916349809886,0.0022157330465205315,10
+successor_only,structure_cross_language_mrr,0.9971799746514576,0.0011021880311106618,10
+successor_only,structure_sibling_vs_unrelated_contrast,0.011968171580682353,0.0502007557287486,10
+shuffled_joint_targets,structure_cross_language_top1,0.9345057034220532,0.009510455086145045,10
+shuffled_joint_targets,structure_cross_language_mrr,0.9652416032953105,0.005203271238148059,10
+shuffled_joint_targets,structure_sibling_vs_unrelated_contrast,0.03299940603737106,0.07325983971352755,10

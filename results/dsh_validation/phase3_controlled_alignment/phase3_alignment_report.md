@@ -1,11 +1,11 @@
 # Phase 3 Controlled Alignment Report
 
-Git commit analysed: `45c733ac6a86d0de9b03a10b5ab40de6c4f69f70`.
-Seed-level runs: 120. Paired-batch minimum pair coverage: 1.0000.
+Git commit analysed: `6c274141e3da275777c689c2073319da26739b24`.
+Seed-level runs: 100. Paired-batch minimum pair coverage: 1.0000.
 
 ## Design
 
-The controlled sweep uses an ID-level paired sampler for paired conditions. Each epoch shuffles proposition IDs, places the German and English rows for each ID in the same minibatch, computes same-ID structure-latent MSE over every observed pair, and asserts complete pair coverage. The random-batch comparator uses the original shuffled row minibatches.
+The canonical controlled sweep uses an ID-level paired sampler. Each epoch shuffles proposition IDs, places the German and English rows for each ID in the same minibatch, computes same-ID structure-latent MSE over every observed pair, and asserts complete pair coverage. Historical random-row alignment runs are retained only as legacy provenance and are excluded from this report.
 
 ## Final Metrics
 
@@ -29,13 +29,6 @@ The controlled sweep uses an ID-level paired sampler for paired conditions. Each
 | 0.30 | 0.6651 +/- 0.0196 (n=10) | 0.7988 +/- 0.0111 (n=10) | 0.4129 +/- 0.0083 (n=10) | 0.7493 +/- 0.0187 (n=10) | 0.9795 +/- 0.0055 (n=10) | 0.0021 +/- 0.0010 (n=10) |
 | 1.00 | 0.7113 +/- 0.0152 (n=10) | 0.8252 +/- 0.0100 (n=10) | 0.3319 +/- 0.0094 (n=10) | 0.7214 +/- 0.0200 (n=10) | 0.9656 +/- 0.0105 (n=10) | 0.0026 +/- 0.0013 (n=10) |
 
-### random full_model
-
-| lambda | Top-1 | MRR | same-ID distance | structure norm |
-|---:|---:|---:|---:|---:|
-| 0.00 | 0.9348 +/- 0.0115 (n=10) | 0.9650 +/- 0.0066 (n=10) | 0.7598 +/- 0.0195 (n=10) | 4.2023 +/- 0.0222 (n=10) |
-| 0.03 | 0.9355 +/- 0.0105 (n=10) | 0.9656 +/- 0.0060 (n=10) | 0.7497 +/- 0.0183 (n=10) | 4.1984 +/- 0.0249 (n=10) |
-
 ## Metric Coverage
 
 The final seed table includes parent, depth and successor accuracy; child-count MAE/RMSE; directional and combined Top-1, Top-5, Top-10, MRR and rank; same-ID distance; wider-neighbourhood Jaccard at k=5, 10 and 20; reconstruction and perplexity; KL terms; sibling, parent-child, cross-language parent-child and unrelated distances; structure-mean norm; and posterior variance.
@@ -45,8 +38,6 @@ Epoch trajectories are stored in `phase3_epoch_trajectories.parquet`, with pair 
 ## Analysis
 
 Effect of lambda: In the paired full model, lambda=0.03 changes structure Top-1 by +0.0172 and same-ID distance by -0.0630 relative to lambda=0.00. From lambda=0.00 to 1.00, Top-1 changes by +0.0516 and same-ID distance changes by -0.3404.
-
-Effect of paired batching: At lambda=0.00, paired minus random full-model Top-1 is +0.0095. At lambda=0.03, paired minus random full-model Top-1 is +0.0260. These rows isolate batch composition from a nonzero pairwise weight.
 
 Effect of the successor objective: The no-successor pilot met the expansion rule and was expanded to seeds 0-9. Recorded reasons: Top-1 differs by 0.4503 at lambda=0.00, Top-1 differs by 0.4309 at lambda=0.03, Top-1 differs by 0.3878 at lambda=0.10, Top-1 differs by 0.3216 at lambda=0.30, Top-1 differs by 0.2915 at lambda=1.00. At lambda=1.00, no-successor minus full-model Top-1 is -0.2846.
 
@@ -62,11 +53,11 @@ Relational-geometry changes: The final seed table reports sibling, parent-child,
 
 2. Does high lambda still increase realised same-ID distance? In the paired full model, same-ID distance change from lambda=0.00 to 1.00 is -0.3404.
 
-3. Does high-weight deterioration remain after pair coverage is controlled? Pair coverage is 1.0000 for paired runs. Retrieval change from lambda=0.00 to 1.00 is +0.0516; use this paired result rather than the old random-minibatch sweep for the causal statement.
+3. Does high-weight deterioration remain after pair coverage is controlled? Pair coverage is 1.0000 for paired runs. Retrieval change from lambda=0.00 to 1.00 is +0.0516; use this paired result rather than legacy random-row alignment runs for the causal statement.
 
 4. Is the failure regime caused or amplified by the successor objective? The no-successor expansion completed. At lambda=1.00, its Top-1 differs from the full model by -0.2846; compare the full grid in `phase3_summary.csv` before attributing the regime solely to successor supervision.
 
-5. Does paired batching itself change lambda=0 performance? Paired minus random lambda=0.00 Top-1 is +0.0095; same-ID distance and other metrics are in the paired-versus-random figure and summary table.
+5. Does paired batching itself change lambda=0 performance? This canonical report does not promote the historical random-row comparator. Any such comparison must be requested from the legacy archive explicitly and cannot be used as manuscript evidence.
 
 6. Can the alignment sweep now support a clear causal statement about direct pairwise attraction? Yes for the paired-batch conditions: every German-English ID pair contributes exactly once per epoch, including lambda=0.00 controls. The statement should still be limited to the measured retained-corpus setting and reported alongside optimisation and latent-scale diagnostics.
 
@@ -80,8 +71,7 @@ Relational-geometry changes: The final seed table reports sibling, parent-child,
 - `figures/alignment_loss_trajectories.png`
 - `figures/structure_mean_norm_across_lambda.png`
 - `figures/posterior_variance_across_lambda.png`
-- `figures/paired_versus_random_batching.png`
 
 ## Recommended interpretation of the alignment experiment
 
-The controlled paired-batch sweep gives lambda a direct operational interpretation: it is the weight on an observed same-ID German-English structure-latent MSE term for every proposition pair in every epoch. Publication claims should distinguish this direct pairwise attraction from the earlier random-minibatch implementation, and should report retrieval, same-ID distance, formal-head performance, latent scale and relational distances together.
+The controlled paired-batch sweep gives lambda a direct operational interpretation: it is the weight on an observed same-ID German-English structure-latent MSE term for every proposition pair in every epoch. Publication claims should use this paired analysis as the authoritative bilingual alignment evidence and should report retrieval, same-ID distance, formal-head performance, latent scale and relational distances together.

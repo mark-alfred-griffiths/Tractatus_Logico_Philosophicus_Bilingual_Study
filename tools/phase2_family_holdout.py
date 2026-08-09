@@ -45,8 +45,6 @@ PROTECTED_PATTERNS = [
     "paper/references.bib",
     "paper/*.pdf",
     "paper/**/*.pdf",
-    "runs/**/*",
-    "reports/paper_reproducibility/**/*",
     "results/dsh_validation/phase1_ablations/**/*",
 ]
 
@@ -804,7 +802,7 @@ def write_figures(out_root: Path, seed_df: pd.DataFrame) -> None:
         plt.xticks(range(len(labels)), labels, rotation=25, ha="right")
         plt.ylabel(label)
         plt.tight_layout()
-        plt.savefig(fig_dir / f"{metric}.png", dpi=180)
+        plt.savefig(fig_dir / f"{metric}.png", dpi=600)
         plt.close()
 
 

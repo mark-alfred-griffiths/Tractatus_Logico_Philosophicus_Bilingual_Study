@@ -4,7 +4,7 @@
   "beta_structure": 0.05,
   "beta_text": 0.01,
   "condition": "full_model",
-  "device": "cuda",
+  "device": "auto",
   "epochs": 80,
   "folds": [
     0,

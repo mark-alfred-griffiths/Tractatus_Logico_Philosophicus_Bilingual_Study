@@ -1,0 +1,6 @@
+method,top1_mean,mrr_mean,source
+Random ranking,0.0019011406844106464,0.013,deterministic candidate-count reference
+Exact-token Jaccard,0.17680608365019013,0.25393282503948766,retained canonical lexical reference value
+Word TF-IDF,0.12927756653992395,0.1941290691602779,retained canonical lexical reference value
+Character 3-5 TF-IDF,0.40969581749049433,0.5239247080137711,retained canonical lexical reference value
+Phase 1 full-model structure latent,0.9360266159695818,0.9656844106463879,results/dsh_validation/phase1_ablations/phase1_ablation_summary.csv

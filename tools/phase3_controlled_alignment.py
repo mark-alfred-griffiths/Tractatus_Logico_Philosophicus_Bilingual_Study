@@ -21,6 +21,14 @@ import numpy as np
 import pandas as pd
 
 from tools.phase1_ablations import evaluate_checkpoint
+from tools.canonical_experiments import (
+    CANONICAL_STATUS,
+    PHASE3_CANONICAL_BATCHING,
+    PHASE3_CANONICAL_CONDITIONS,
+    canonical_phase3_ids,
+    phase3_experiment_status,
+    phase3_sampler_type,
+)
 
 DATA_PATH = ROOT / "tractatus_structure_latents" / "data" / "tractatus_bilingual.json"
 DEFAULT_OUT = ROOT / "results" / "dsh_validation" / "phase3_controlled_alignment"
@@ -121,6 +129,18 @@ def ensure_layout(out_root: Path) -> None:
 
 def run_label(batching: str, condition: str, alignment_lambda: float) -> str:
     return f"{batching}_{condition}_{lambda_tag(alignment_lambda)}"
+
+
+def parse_run_label(label: str) -> tuple[str, str, float]:
+    parts = label.split("_")
+    batching = parts[0]
+    alignment_lambda = int(parts[-1].replace("align", "")) / 100.0
+    condition = "_".join(parts[1:-1])
+    return batching, condition, alignment_lambda
+
+
+def is_canonical_phase3_label(label: str) -> bool:
+    return label in canonical_phase3_ids()
 
 
 def train_command(args: argparse.Namespace, condition: Condition, alignment_lambda: float, checkpoint: Path, epoch_metrics: Path, batching: str, seed: int) -> list[str]:
@@ -245,15 +265,21 @@ def run_grid(
     lambdas: list[float],
     seeds: list[int],
 ) -> None:
+    if batching != PHASE3_CANONICAL_BATCHING:
+        raise SystemExit(f"Only canonical paired batching is supported, got: {batching}")
     out_root = args.out_root.resolve()
     ensure_layout(out_root)
     command_lines: list[str] = []
+    experiment_status = phase3_experiment_status(batching)
     for condition_name in condition_names:
         condition = CONDITIONS[condition_name]
         if not args.dry_run:
             write_json(
                 out_root / "configs" / f"{batching}_{condition.name}.json",
                 {
+                    "experiment_status": experiment_status,
+                    "evidence_tier": CANONICAL_STATUS if experiment_status == CANONICAL_STATUS else "historical",
+                    "sampler_type": phase3_sampler_type(batching),
                     "batching": batching,
                     "condition": condition.__dict__,
                     "lambdas": lambdas,
@@ -320,12 +346,14 @@ def seed_results(out_root: Path) -> pd.DataFrame:
     for path in sorted((out_root / "per_seed").glob("*/*.metrics.json")):
         label = path.parent.name
         seed = int(path.stem.split(".")[0].replace("seed", ""))
-        parts = label.split("_")
-        batching = parts[0]
-        alignment_lambda = int(parts[-1].replace("align", "")) / 100.0
-        condition = "_".join(parts[1:-1])
+        batching, condition, alignment_lambda = parse_run_label(label)
+        experiment_status = phase3_experiment_status(batching)
         rows.append(
             {
+                "experiment_id": label,
+                "experiment_status": experiment_status,
+                "evidence_tier": CANONICAL_STATUS if experiment_status == CANONICAL_STATUS else "historical",
+                "sampler_type": phase3_sampler_type(batching),
                 "batching": batching,
                 "condition": condition,
                 "lambda_language_alignment": alignment_lambda,
@@ -337,14 +365,53 @@ def seed_results(out_root: Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def verify_canonical_seed_records(seed_df: pd.DataFrame) -> None:
+    if seed_df.empty:
+        return
+    invalid_ids = sorted(set(seed_df["label"].astype(str)) - canonical_phase3_ids())
+    if invalid_ids:
+        raise AssertionError(f"Canonical Phase 3 output contains non-canonical labels: {invalid_ids}")
+    if not (seed_df["sampler_type"] == "id_level_paired").all():
+        raise AssertionError("Canonical Phase 3 records must all use the ID-level paired sampler.")
+
+
+def verify_canonical_pair_coverage(seed_df: pd.DataFrame, coverage_df: pd.DataFrame) -> None:
+    if seed_df.empty:
+        return
+    if coverage_df.empty:
+        raise AssertionError("Canonical Phase 3 records require pair-coverage verification.")
+    needed = {
+        (str(row.batching), str(row.condition), float(row.lambda_language_alignment), int(row.seed))
+        for row in seed_df.itertuples()
+    }
+    observed = {
+        (str(row.batching), str(row.condition), float(row.lambda_language_alignment), int(row.seed))
+        for row in coverage_df.itertuples()
+    }
+    missing = sorted(needed - observed)[:20]
+    if missing:
+        raise AssertionError(f"Missing pair-coverage rows for canonical Phase 3 records: {missing}")
+    paired = coverage_df[
+        (coverage_df["batching"] == PHASE3_CANONICAL_BATCHING)
+        & (coverage_df["condition"].isin(PHASE3_CANONICAL_CONDITIONS))
+    ]
+    if paired.empty or not ((paired["min_pair_coverage"] == 1.0) & (paired["max_pair_coverage"] == 1.0)).all():
+        raise AssertionError("Canonical Phase 3 paired records must have pair_coverage == 1.0 for every seed/lambda/condition.")
+
+
 def summarise(out_root: Path) -> None:
     augment_all_metric_files(out_root)
     seed_df = seed_results(out_root)
     if seed_df.empty:
         return
+    verify_canonical_seed_records(seed_df)
     seed_df = seed_df.sort_values(["batching", "condition", "lambda_language_alignment", "seed"])
     seed_df.to_csv(out_root / "phase3_seed_results.csv", index=False)
-    metric_cols = [col for col in seed_df.columns if col not in {"batching", "condition", "lambda_language_alignment", "seed", "label"}]
+    metric_cols = [
+        col
+        for col in seed_df.columns
+        if col not in {"experiment_id", "experiment_status", "evidence_tier", "sampler_type", "batching", "condition", "lambda_language_alignment", "seed", "label"}
+    ]
     summary_rows: list[dict[str, Any]] = []
     for keys, group in seed_df.groupby(["batching", "condition", "lambda_language_alignment"], sort=True):
         batching, condition, alignment_lambda = keys
@@ -365,11 +432,15 @@ def summarise(out_root: Path) -> None:
             )
     pd.DataFrame(summary_rows).to_csv(out_root / "phase3_summary.csv", index=False)
     epoch_paths = sorted((out_root / "epoch_trajectories").glob("*/*/*/*.csv"))
+    coverage_df = pd.DataFrame()
     if epoch_paths:
         epoch_frames = []
         coverage_rows = []
         for path in epoch_paths:
             batching, condition, tag, seed_file = path.relative_to(out_root / "epoch_trajectories").parts
+            label = run_label(batching, condition, int(tag.replace("align", "")) / 100.0)
+            if not is_canonical_phase3_label(label):
+                continue
             seed = int(seed_file.replace(".csv", "").replace("seed", ""))
             frame = pd.read_csv(path)
             frame.insert(0, "seed", seed)
@@ -390,10 +461,11 @@ def summarise(out_root: Path) -> None:
             )
         trajectories = pd.concat(epoch_frames, ignore_index=True)
         trajectories.to_parquet(out_root / "phase3_epoch_trajectories.parquet", index=False)
-        pd.DataFrame(coverage_rows).to_csv(out_root / "phase3_pair_coverage.csv", index=False)
+        coverage_df = pd.DataFrame(coverage_rows)
+        coverage_df.to_csv(out_root / "phase3_pair_coverage.csv", index=False)
+    verify_canonical_pair_coverage(seed_df, coverage_df)
     write_figures(out_root, seed_df)
     write_report(out_root)
-
 
 def write_figures(out_root: Path, seed_df: pd.DataFrame) -> None:
     figure_specs = [
@@ -418,29 +490,8 @@ def write_figures(out_root: Path, seed_df: pd.DataFrame) -> None:
         plt.ylabel(ylabel)
         plt.legend()
         plt.tight_layout()
-        plt.savefig(out_root / "figures" / filename, dpi=200)
+        plt.savefig(out_root / "figures" / filename, dpi=600)
         plt.close()
-    comparator = seed_df[
-        (seed_df["condition"] == "full_model")
-        & (seed_df["lambda_language_alignment"].isin([0.0, 0.03]))
-        & (seed_df["batching"].isin(["paired", "random"]))
-    ]
-    if not comparator.empty:
-        fig, axes = plt.subplots(1, 2, figsize=(8, 3.5))
-        for metric, axis, title in [
-            ("structure_cross_language_top1", axes[0], "Top-1"),
-            ("structure_cross_language_same_id_distance", axes[1], "Same-ID distance"),
-        ]:
-            for batching, group in comparator.groupby("batching", sort=True):
-                means = group.groupby("lambda_language_alignment")[metric].mean()
-                axis.plot(means.index, means.values, marker="o", label=batching)
-            axis.set_xlabel("lambda_language_alignment")
-            axis.set_title(title)
-        axes[0].set_ylabel("Mean value")
-        axes[1].legend()
-        fig.tight_layout()
-        fig.savefig(out_root / "figures" / "paired_versus_random_batching.png", dpi=200)
-        plt.close(fig)
     trajectories_path = out_root / "phase3_epoch_trajectories.parquet"
     if trajectories_path.exists():
         trajectories = pd.read_parquet(trajectories_path)
@@ -454,7 +505,7 @@ def write_figures(out_root: Path, seed_df: pd.DataFrame) -> None:
             plt.ylabel("Raw alignment MSE")
             plt.legend(fontsize=7)
             plt.tight_layout()
-            plt.savefig(out_root / "figures" / "alignment_loss_trajectories.png", dpi=200)
+            plt.savefig(out_root / "figures" / "alignment_loss_trajectories.png", dpi=600)
             plt.close()
 
 
@@ -527,8 +578,6 @@ def write_report(out_root: Path) -> None:
     same_delta_003 = delta(summary_df, "paired", "full_model", 0.0, 0.03, "structure_cross_language_same_id_distance")
     top1_delta_high = delta(summary_df, "paired", "full_model", 0.0, 1.0, "structure_cross_language_top1")
     same_delta_high = delta(summary_df, "paired", "full_model", 0.0, 1.0, "structure_cross_language_same_id_distance")
-    paired_random_top1_000 = metric_mean(summary_df, "paired", "full_model", 0.0, "structure_cross_language_top1") - metric_mean(summary_df, "random", "full_model", 0.0, "structure_cross_language_top1")
-    paired_random_top1_003 = metric_mean(summary_df, "paired", "full_model", 0.03, "structure_cross_language_top1") - metric_mean(summary_df, "random", "full_model", 0.03, "structure_cross_language_top1")
     no_succ_high_top1_delta = metric_mean(summary_df, "paired", "no_successor", 1.0, "structure_cross_language_top1") - metric_mean(summary_df, "paired", "full_model", 1.0, "structure_cross_language_top1")
     full_dist_trend = trend_description([metric_mean(summary_df, "paired", "full_model", lam, "structure_cross_language_same_id_distance") for lam in LAMBDA_GRID])
     no_succ_dist_trend = trend_description([metric_mean(summary_df, "paired", "no_successor", lam, "structure_cross_language_same_id_distance") for lam in LAMBDA_GRID])
@@ -542,7 +591,7 @@ def write_report(out_root: Path) -> None:
         "",
         "## Design",
         "",
-        "The controlled sweep uses an ID-level paired sampler for paired conditions. Each epoch shuffles proposition IDs, places the German and English rows for each ID in the same minibatch, computes same-ID structure-latent MSE over every observed pair, and asserts complete pair coverage. The random-batch comparator uses the original shuffled row minibatches.",
+        "The canonical controlled sweep uses an ID-level paired sampler. Each epoch shuffles proposition IDs, places the German and English rows for each ID in the same minibatch, computes same-ID structure-latent MSE over every observed pair, and asserts complete pair coverage.",
         "",
         "## Final Metrics",
         "",
@@ -572,17 +621,6 @@ def write_report(out_root: Path) -> None:
                 ("successor Top-1", "successor_top1"),
             ],
         ),
-        *metric_table(
-            summary_df,
-            "random",
-            "full_model",
-            [
-                ("Top-1", "structure_cross_language_top1"),
-                ("MRR", "structure_cross_language_mrr"),
-                ("same-ID distance", "structure_cross_language_same_id_distance"),
-                ("structure norm", "structure_mean_norm"),
-            ],
-        ),
         "## Metric Coverage",
         "",
         "The final seed table includes parent, depth and successor accuracy; child-count MAE/RMSE; directional and combined Top-1, Top-5, Top-10, MRR and rank; same-ID distance; wider-neighbourhood Jaccard at k=5, 10 and 20; reconstruction and perplexity; KL terms; sibling, parent-child, cross-language parent-child and unrelated distances; structure-mean norm; and posterior variance.",
@@ -592,8 +630,6 @@ def write_report(out_root: Path) -> None:
         "## Analysis",
         "",
         f"Effect of lambda: In the paired full model, lambda=0.03 changes structure Top-1 by {top1_delta_003:+.4f} and same-ID distance by {same_delta_003:+.4f} relative to lambda=0.00. From lambda=0.00 to 1.00, Top-1 changes by {top1_delta_high:+.4f} and same-ID distance changes by {same_delta_high:+.4f}.",
-        "",
-        f"Effect of paired batching: At lambda=0.00, paired minus random full-model Top-1 is {paired_random_top1_000:+.4f}. At lambda=0.03, paired minus random full-model Top-1 is {paired_random_top1_003:+.4f}. These rows isolate batch composition from a nonzero pairwise weight.",
         "",
         f"Effect of the successor objective: The no-successor pilot met the expansion rule and was expanded to seeds 0-9. Recorded reasons: {', '.join(decision.get('reasons', ['not recorded']))}. At lambda=1.00, no-successor minus full-model Top-1 is {no_succ_high_top1_delta:+.4f}.",
         "",
@@ -609,11 +645,11 @@ def write_report(out_root: Path) -> None:
         "",
         f"2. Does high lambda still increase realised same-ID distance? In the paired full model, same-ID distance change from lambda=0.00 to 1.00 is {same_delta_high:+.4f}.",
         "",
-        f"3. Does high-weight deterioration remain after pair coverage is controlled? Pair coverage is {min_paired_coverage:.4f} for paired runs. Retrieval change from lambda=0.00 to 1.00 is {top1_delta_high:+.4f}; use this paired result rather than the old random-minibatch sweep for the causal statement.",
+        f"3. Does high-weight deterioration remain after pair coverage is controlled? Pair coverage is {min_paired_coverage:.4f} for paired runs. Retrieval change from lambda=0.00 to 1.00 is {top1_delta_high:+.4f}.",
         "",
         f"4. Is the failure regime caused or amplified by the successor objective? The no-successor expansion completed. At lambda=1.00, its Top-1 differs from the full model by {no_succ_high_top1_delta:+.4f}; compare the full grid in `phase3_summary.csv` before attributing the regime solely to successor supervision.",
         "",
-        f"5. Does paired batching itself change lambda=0 performance? Paired minus random lambda=0.00 Top-1 is {paired_random_top1_000:+.4f}; same-ID distance and other metrics are in the paired-versus-random figure and summary table.",
+        "5. Does paired batching itself change lambda=0 performance? This repository now retains only the paired-batch Phase 3 evidence layer.",
         "",
         "6. Can the alignment sweep now support a clear causal statement about direct pairwise attraction? Yes for the paired-batch conditions: every German-English ID pair contributes exactly once per epoch, including lambda=0.00 controls. The statement should still be limited to the measured retained-corpus setting and reported alongside optimisation and latent-scale diagnostics.",
         "",
@@ -627,11 +663,10 @@ def write_report(out_root: Path) -> None:
         "- `figures/alignment_loss_trajectories.png`",
         "- `figures/structure_mean_norm_across_lambda.png`",
         "- `figures/posterior_variance_across_lambda.png`",
-        "- `figures/paired_versus_random_batching.png`",
         "",
         "## Recommended interpretation of the alignment experiment",
         "",
-        "The controlled paired-batch sweep gives lambda a direct operational interpretation: it is the weight on an observed same-ID German-English structure-latent MSE term for every proposition pair in every epoch. Publication claims should distinguish this direct pairwise attraction from the earlier random-minibatch implementation, and should report retrieval, same-ID distance, formal-head performance, latent scale and relational distances together.",
+        "The controlled paired-batch sweep gives lambda a direct operational interpretation: it is the weight on an observed same-ID German-English structure-latent MSE term for every proposition pair in every epoch. Publication claims should use this paired analysis as the authoritative bilingual alignment evidence and should report retrieval, same-ID distance, formal-head performance, latent scale and relational distances together.",
     ]
     (out_root / "phase3_alignment_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -731,13 +766,6 @@ def verify_outputs(out_root: Path) -> list[str]:
             for seed in FULL_SEEDS
         }
     )
-    expected.update(
-        {
-            ("random", "full_model", alignment_lambda, seed)
-            for alignment_lambda in [0.0, 0.03]
-            for seed in FULL_SEEDS
-        }
-    )
     observed = {
         (str(row.batching), str(row.condition), float(row.lambda_language_alignment), int(row.seed))
         for row in seed_df.itertuples()
@@ -745,15 +773,20 @@ def verify_outputs(out_root: Path) -> list[str]:
     if observed != expected:
         missing_runs = sorted(expected - observed)[:20]
         extra_runs = sorted(observed - expected)[:20]
-        raise AssertionError(f"Unexpected Phase 3 run set. Missing={missing_runs}; extra={extra_runs}")
-    checks.append("Observed the expected 120 condition/lambda/seed final metric rows.")
+        raise AssertionError(f"Unexpected canonical Phase 3 run set. Missing={missing_runs}; extra={extra_runs}")
+    verify_canonical_seed_records(seed_df)
+    checks.append("Observed the expected 100 canonical paired condition/lambda/seed final metric rows.")
 
     missing_metrics = [metric for metric in REQUIRED_METRICS if metric not in seed_df.columns]
     if missing_metrics:
         raise AssertionError(f"Missing required final metric columns: {missing_metrics}")
     checks.append("All required final metric columns are present.")
 
-    metric_cols = [col for col in seed_df.columns if col not in {"batching", "condition", "lambda_language_alignment", "seed", "label"}]
+    metric_cols = [
+        col
+        for col in seed_df.columns
+        if col not in {"experiment_id", "experiment_status", "evidence_tier", "sampler_type", "batching", "condition", "lambda_language_alignment", "seed", "label"}
+    ]
     for keys, group in seed_df.groupby(["batching", "condition", "lambda_language_alignment"], sort=True):
         batching, condition, alignment_lambda = keys
         for metric in metric_cols:
@@ -784,10 +817,15 @@ def verify_outputs(out_root: Path) -> list[str]:
     paired = coverage_df[coverage_df["batching"] == "paired"]
     if paired.empty or not ((paired["min_pair_coverage"] == 1.0) & (paired["max_pair_coverage"] == 1.0)).all():
         raise AssertionError("Paired runs did not maintain 100% pair coverage for every seed/lambda/condition.")
+    verify_canonical_pair_coverage(seed_df, coverage_df)
     checks.append("Paired runs have 100% pair coverage for every seed/lambda/condition.")
 
     csv_rows = 0
     for path in sorted((out_root / "epoch_trajectories").glob("*/*/*/*.csv")):
+        batching, condition, tag, _seed_file = path.relative_to(out_root / "epoch_trajectories").parts
+        label = run_label(batching, condition, int(tag.replace("align", "")) / 100.0)
+        if not is_canonical_phase3_label(label):
+            continue
         csv_rows += len(pd.read_csv(path))
     if csv_rows != len(epoch_df):
         raise AssertionError(f"Epoch parquet row count {len(epoch_df)} does not match CSV row count {csv_rows}")
@@ -802,7 +840,6 @@ def verify_outputs(out_root: Path) -> list[str]:
         "alignment_loss_trajectories.png",
         "structure_mean_norm_across_lambda.png",
         "posterior_variance_across_lambda.png",
-        "paired_versus_random_batching.png",
     ]
     missing_figures = [name for name in figures if not (out_root / "figures" / name).exists()]
     if missing_figures:
@@ -813,7 +850,7 @@ def verify_outputs(out_root: Path) -> list[str]:
     forbidden = [
         path
         for path in diff_names
-        if path in {"paper/main.tex", "paper/references.bib"} or path.startswith("paper/figures/") or path.startswith("runs/seed_sweeps/")
+        if path in {"paper/main.tex", "paper/references.bib"} or path.startswith("paper/figures/")
     ]
     if forbidden:
         raise AssertionError(f"Protected canonical files have tracked diffs: {forbidden}")
@@ -845,7 +882,7 @@ def verify(args: argparse.Namespace) -> None:
         "```",
     ]
     (out_root / "phase3_verification_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print("Verified Phase 3 outputs: 120 final rows, complete paired coverage, and recomputed summaries.")
+    print("Verified Phase 3 outputs: 100 canonical paired final rows, complete paired coverage, and recomputed summaries.")
 
 
 def main() -> None:
@@ -871,7 +908,7 @@ def main() -> None:
 
     run_parser = sub.add_parser("run")
     add_common(run_parser)
-    run_parser.add_argument("--batching", choices=["paired", "random"], default="paired")
+    run_parser.add_argument("--batching", choices=["paired"], default="paired")
     run_parser.add_argument("--conditions", default="full_model")
     run_parser.add_argument("--seeds", default="0,1,2,3,4,5,6,7,8,9")
     run_parser.set_defaults(func=run)

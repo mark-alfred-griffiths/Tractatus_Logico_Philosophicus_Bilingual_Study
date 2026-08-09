@@ -1,107 +1,52 @@
 # Experiments
 
-The canonical experiments are repeated-seed sweeps. Generated artifacts live under `runs/seed_sweeps/`.
+The current empirical layer for `paper/Tractatus_final.docx` is the Phase 1-4
+validation suite under `results/dsh_validation/`.
 
-## Monolingual Study
-
-Balanced English split-latent model:
-
-```text
-study:           runs/seed_sweeps/monolingual_split_24_8_reg005/
-languages:       en
-seeds:           0..9
-z_text:          24
-z_structure:      8
-beta_text:        0.01
-beta_structure:   0.05
-```
-
-The monolingual study tests whether `z_structure` recovers Tractatus hierarchy under English-only text reconstruction.
-
-## Bilingual Alignment Lambda Sweep
-
-German/English split-latent model across alignment strengths:
+## Canonical Phases
 
 ```text
-study:           runs/seed_sweeps/bilingual_alignment_lambda_sweep/
-languages:       en,de
-seeds:           0..9
-lambda values:   0.00, 0.03, 0.10, 0.30, 1.00
-z_text:          24
-z_structure:      8
-beta_text:        0.01
-beta_structure:   0.05
+results/dsh_validation/phase1_ablations/
+results/dsh_validation/phase2_family_holdout/
+results/dsh_validation/phase3_controlled_alignment/
+results/dsh_validation/phase4_case_studies/
 ```
 
-The bilingual study tests the tradeoff between structural prediction, reconstruction, and same-id cross-language retrieval.
+Phase roles:
 
-## Canonical Artifacts
+- Phase 1: retained-corpus ablation diagnostics.
+- Phase 2: immediate-parent-family holdout.
+- Phase 3: controlled paired-batch bilingual alignment.
+- Phase 4: frozen text-blind case selection.
 
-```text
-runs/seed_sweeps/monolingual_split_24_8_reg005/
-runs/seed_sweeps/bilingual_alignment_lambda_sweep/
-paper/figures/
-```
+## Safe Paper Reproduction
 
-Metric sweep figures are generated as means across seeds `0..9` with +/- one-standard-deviation error bars. PCA figures use a representative model and include the seed in title and filename.
-
-## Generate Figures
+The default paper reproduction path does not retrain:
 
 ```bash
-python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
+python3 tools/reproduce_final_paper_outputs.py --dry-run
 ```
 
-## Canonical Reproducibility Audit
+After reviewing the printed command list, run without `--dry-run` to rebuild
+paper-facing derivatives from retained Phase 1-4 outputs.
 
-The canonical paper keeps the retained trained models fixed. Regenerating paper
-outputs means aggregating retained `seed*.metrics.json` files, regenerating
-figures, refreshing derived TF-IDF/Jaccard/Euclidean statistics, and rebuilding
-the human-readable summaries. It does not run optimisation or retrain.
+## Deliberate Reruns
 
-Complete canonical paper-output regeneration:
+Phase commands are deliberate reruns and can write checkpoints, logs, raw
+outputs, per-seed metrics, reports, and figures:
 
 ```bash
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --out runs/seed_sweeps/monolingual_split_24_8_reg005/summaries/regenerated_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.analyse_seed_sweep \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align000 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align003 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align010 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align030 \
-  runs/seed_sweeps/bilingual_alignment_lambda_sweep/align100 \
-  --out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/per_lambda_comparison
-
-PYTHONDONTWRITEBYTECODE=1 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures \
-  --seed-sweep-dir runs/seed_sweeps/bilingual_alignment_lambda_sweep \
-  --monolingual-dir runs/seed_sweeps/monolingual_split_24_8_reg005 \
-  --representative-alignment align003 \
-  --representative-seed 0 \
-  --out-dir paper/figures \
-  --summary-out runs/seed_sweeps/bilingual_alignment_lambda_sweep/summaries/summary.json \
-  --family-distance-data paper/figures/family_case_distance_matrix_data.csv
-
-PYTHONDONTWRITEBYTECODE=1 MPLCONFIGDIR=/tmp/matplotlib python3 tools/reproduce_paper_metrics_and_figures.py \
-  --metrics --figures --skip-checkpoints \
-  --out-dir reports/paper_reproducibility/reproduced
-
-PYTHONDONTWRITEBYTECODE=1 python3 tools/write_paper_results_summaries.py
+python3 tools/phase1_ablations.py run --skip-existing
+python3 tools/phase2_family_holdout.py run --skip-existing
+python3 tools/phase3_controlled_alignment.py run --batching paired --conditions full_model --skip-existing
+python3 tools/phase3_controlled_alignment.py successor-control --skip-existing
+python3 tools/phase4_case_studies.py run
 ```
 
-This regenerates summary artefacts under `runs/seed_sweeps/*/summaries/`, all
-paper figures including the Figure 7 family 2.2 Euclidean distance matrix,
-paper audit CSV/JSON statistics under `reports/`, and
-`paper/monolingual_results_summary.txt` plus
-`paper/bilingual_results_summary.txt`.
+Rebuild summaries and checks after deliberate reruns:
 
-## Non-Canonical Historical Directions
-
-Earlier one-off retained checkpoints and baseline plots have been superseded by repeated-seed sweeps. Do not add new generated artifacts directly to the root of `runs/` unless they are explicitly archived and documented.
+```bash
+python3 tools/build_canonical_reports.py
+python3 tools/verify_canonical_evidence.py
+python3 tools/export_paper_tables.py
+```

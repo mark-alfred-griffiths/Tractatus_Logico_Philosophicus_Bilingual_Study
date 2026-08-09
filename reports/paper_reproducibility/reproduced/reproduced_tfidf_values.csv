@@ -1,3 +1,0 @@
-metric_family,method,candidate_count,directions,top1_mean,mrr_mean,preprocessing,source_artifact
-TF-IDF,Word TF-IDF,526,de_to_en;en_to_de,0.12927756653992395,0.1941290691602779,"exact model input spans, proposition IDs excluded, 96-token rule",reports/paper_reproducibility/reproduced/reproduced_tfidf_values.csv
-TF-IDF,Character 3-5 TF-IDF,526,de_to_en;en_to_de,0.40969581749049433,0.5239247080137711,"exact model input spans, proposition IDs excluded, 96-token rule",reports/paper_reproducibility/reproduced/reproduced_tfidf_values.csv

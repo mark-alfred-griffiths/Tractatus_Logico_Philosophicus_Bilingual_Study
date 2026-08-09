@@ -3,7 +3,7 @@
 The project supports two dataset schemas:
 
 ```text
-tractatus_structure_latents/data/tractatus.json            English-only legacy dataset
+tractatus_structure_latents/data/tractatus.json            English-only dataset
 tractatus_structure_latents/data/tractatus_bilingual.json  aligned German/English dataset
 ```
 
@@ -45,7 +45,7 @@ Fields:
 
 The training loader flattens bilingual rows into proposition-language samples. For example, proposition `4.121` produces one English sample and one German sample, but both share the same structural targets and proposition index.
 
-## Legacy English Schema
+## English-Only Schema
 
 The original English-only dataset uses one `text` field:
 
