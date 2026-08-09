@@ -52,6 +52,10 @@ wrapper verifies or rebuilds canonical reports, paper tables, figure manifests,
 and final-paper manifests. It does not retrain models or restore external
 checkpoint/raw artifacts.
 
+For a staged clean-clone protocol that also covers external artifact
+restoration, dataset rebuilding, scratch smoke runs, and full empirical reruns,
+use [Full reproducibility test plan](docs/full_reproducibility_test_plan.md).
+
 ## Deliberate Retraining
 
 Retraining is separate from the default paper reproduction path. The empirical
@@ -63,6 +67,7 @@ outputs, per-seed metrics, and figures under `results/dsh_validation/`.
 
 - [Documentation index](docs/DOCUMENTATION.md)
 - [Reproduction](docs/reproduction.md)
+- [Full reproducibility test plan](docs/full_reproducibility_test_plan.md)
 - [Results](docs/results.md)
 - [Paper notes](paper/PAPER.md)
 - [Repository layout for paper](docs/repository_layout_for_paper.md)

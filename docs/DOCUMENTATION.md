@@ -8,8 +8,11 @@ This index is organised for readers of the final manuscript.
 2. Read [Paper notes](../paper/PAPER.md) for manuscript-facing files.
 3. Use [Reproduction](reproduction.md) for the safe non-training wrapper and
    deliberate retraining commands.
-4. Use [Results](results.md) for the Phase 1-4 evidence map.
-5. Use [Repository layout for paper](repository_layout_for_paper.md) for status
+4. Use [Full reproducibility test plan](full_reproducibility_test_plan.md) for
+   a clean-clone sequence that includes archive restoration, dataset rebuilds,
+   smoke runs, and full empirical reruns.
+5. Use [Results](results.md) for the Phase 1-4 evidence map.
+6. Use [Repository layout for paper](repository_layout_for_paper.md) for status
    labels, retained evidence boundaries, and migration policy.
 
 ## Current Manifests And Evidence
@@ -33,6 +36,7 @@ evidence layer for the final paper.
 ## Command Reference
 
 - [Canonical paper reproducibility commands](canonical_paper_reproducibility_commands.md)
+- [Full reproducibility test plan](full_reproducibility_test_plan.md)
 
 The current safe entry point remains:
 

@@ -42,6 +42,10 @@ python3 tools/reproduce_final_paper_outputs.py --dry-run
 After reviewing the command list, run without `--dry-run` to regenerate or
 verify final-paper derivatives from retained evidence.
 
+For full clean-clone verification, external artifact restoration, dataset
+rebuilds, and empirical reruns, follow
+`docs/full_reproducibility_test_plan.md`.
+
 Useful narrow checks:
 
 ```bash

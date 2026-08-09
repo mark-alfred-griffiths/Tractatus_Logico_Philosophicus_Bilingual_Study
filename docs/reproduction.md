@@ -2,6 +2,10 @@
 
 Run commands from the repository root.
 
+For an end-to-end staged clean-clone protocol, including external archive
+restoration, dataset rebuilding, scratch smoke runs, and full empirical reruns,
+see [Full reproducibility test plan](full_reproducibility_test_plan.md).
+
 ## Default Final-Paper Path
 
 The default reproduction path is non-training and works from retained evidence
@@ -144,3 +148,6 @@ python3 -m tractatus_structure_latents.scripts.build_dataset \
   --output tractatus_structure_latents/data/tractatus_bilingual.json \
   --languages en,de
 ```
+
+The full test sequence for dataset rebuilds and empirical reruns is maintained
+in [Full reproducibility test plan](full_reproducibility_test_plan.md).
