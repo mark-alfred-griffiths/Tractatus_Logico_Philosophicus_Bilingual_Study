@@ -55,7 +55,11 @@ class CorpusMeta:
 
 
 def git_output(args: list[str]) -> str:
-    return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
+    result = subprocess.run(["git", *args], cwd=ROOT, text=True, capture_output=True, check=False)
+    if result.returncode == 0:
+        return result.stdout.strip()
+    detail = result.stderr.strip() or result.stdout.strip() or f"git exited with status {result.returncode}"
+    return f"unavailable ({detail.splitlines()[0]})"
 
 
 def read_json(path: Path) -> Any:

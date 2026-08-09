@@ -186,6 +186,9 @@ access. For a fully offline test, provide a local source text with
 Before a full rerun, test that each empirical runner can execute without
 touching the canonical `results/dsh_validation/` tree:
 
+Use a real Git clone with a valid HEAD for canonical retained evidence; missing
+Git metadata is acceptable only for smoke tests.
+
 ```bash
 python3 tools/phase1_ablations.py run \
   --out-root tmp/repro_smoke/phase1_ablations \

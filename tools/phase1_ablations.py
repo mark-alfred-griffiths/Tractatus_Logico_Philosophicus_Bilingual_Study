@@ -125,7 +125,10 @@ def protected_hashes() -> dict[str, str]:
 
 def git_output(args: list[str]) -> str:
     result = subprocess.run(["git", *args], cwd=ROOT, text=True, capture_output=True, check=False)
-    return result.stdout.strip() if result.returncode == 0 else f"ERROR: {result.stderr.strip()}"
+    if result.returncode == 0:
+        return result.stdout.strip()
+    detail = result.stderr.strip() or result.stdout.strip() or f"git exited with status {result.returncode}"
+    return f"unavailable ({detail.splitlines()[0]})"
 
 
 def command_line(command: list[str]) -> str:
