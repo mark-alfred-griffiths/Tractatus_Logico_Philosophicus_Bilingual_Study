@@ -34,7 +34,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tools.phase1_ablations import instantiate_model
-from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, tokenize
+from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, row_texts, tokenize
 
 DATA_PATH = ROOT / "tractatus_structure_latents" / "data" / "tractatus_bilingual.json"
 DEFAULT_OUT = ROOT / "results" / "dsh_validation" / "phase2_family_holdout"
@@ -129,7 +129,8 @@ def family_id(row: dict[str, Any]) -> str:
 
 
 def text_len(row: dict[str, Any]) -> float:
-    return mean(len(tokenize(text)[:96]) for text in row["texts"].values())
+    texts = row_texts(row)
+    return mean(len(tokenize(text)[:96]) for text in texts.values()) if texts else 0.0
 
 
 def make_fold_manifest(data_path: Path, out: Path, fold_count: int = 5) -> pd.DataFrame:
@@ -477,8 +478,10 @@ def relation_metrics(df: pd.DataFrame, z: np.ndarray, part: str, rows_by_id: dic
 
 
 def lexical_references(rows: list[dict[str, Any]], train_ids: set[str], test_ids: set[str]) -> dict[str, float]:
-    train_texts = [text for row in rows if row["id"] in train_ids for text in row["texts"].values()]
-    records = [{"id": row["id"], "language": lang, "text": text} for row in rows for lang, text in row["texts"].items()]
+    train_texts = [text for row in rows if row["id"] in train_ids for text in row_texts(row).values()]
+    records = [{"id": row["id"], "language": lang, "text": text} for row in rows for lang, text in row_texts(row).items()]
+    if len({record["language"] for record in records}) < 2:
+        return {}
     df = pd.DataFrame(records)
     test_indices = [i for i, row in df.iterrows() if row["id"] in test_ids]
     metrics: dict[str, float] = {}
@@ -897,13 +900,13 @@ def leakage_checks(out_root: Path, data_path: Path) -> list[str]:
         if not split_families.empty:
             raise AssertionError(f"Immediate-parent families split across folds: {split_families.index.tolist()[:10]}")
         checks.append(f"Fold {fold}: no immediate-parent family is divided across folds.")
-        train_texts = [text for prop_id in train_set for text in rows_by_id[prop_id]["texts"].values()]
+        train_texts = [text for prop_id in train_set for text in row_texts(rows_by_id[prop_id]).values()]
         expected_vocab = Vocabulary.build(train_texts).token_to_id
         for vocab_path in sorted((out_root / "checkpoints").glob(f"*/fold{fold}_seed*.vocab.json")):
             observed = read_json(vocab_path)
             if observed != expected_vocab:
                 raise AssertionError(f"Vocabulary mismatch for {vocab_path}")
-        test_tokens = {token for prop_id in test_set for text in rows_by_id[prop_id]["texts"].values() for token in tokenize(text)}
+        test_tokens = {token for prop_id in test_set for text in row_texts(rows_by_id[prop_id]).values() for token in tokenize(text)}
         train_tokens = {token for text in train_texts for token in tokenize(text)}
         checks.append(f"Fold {fold}: {len(test_tokens - train_tokens)} held-out-only tokens map through `<unk>`.")
     checks.append("German and English counterparts are represented by one proposition ID and therefore share the same fold.")

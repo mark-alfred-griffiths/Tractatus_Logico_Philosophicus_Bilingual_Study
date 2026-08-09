@@ -28,7 +28,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from torch.utils.data import DataLoader
 
 from tools.phase1_ablations import instantiate_model
-from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, tokenize
+from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, row_texts, tokenize
 
 DATA_PATH = ROOT / "tractatus_structure_latents" / "data" / "tractatus_bilingual.json"
 PHASE3 = ROOT / "results" / "dsh_validation" / "phase3_controlled_alignment"
@@ -95,11 +95,20 @@ def load_corpus_meta(data_path: Path) -> CorpusMeta:
         prop_id = str(row["id"])
         parent_id = str(row["parent_id"]) if row["parent_id"] is not None else "ROOT"
         family_children.setdefault(parent_id, []).append(prop_id)
-        for language, text in row.get("texts", {}).items():
+        for language, text in row_texts(row).items():
             token_count = len(tokenize(text))
             lengths[(prop_id, language)] = token_count
             truncated[(prop_id, language)] = token_count + 2 > 96
     return CorpusMeta(rows, by_id, top_branch, family_children, lengths, truncated)
+
+
+def require_language_text(row: dict[str, Any], language: str) -> str:
+    texts = row_texts(row)
+    if language not in texts:
+        prop_id = row.get("id", "<unknown>")
+        available = ",".join(sorted(texts)) or "none"
+        raise ValueError(f"Proposition {prop_id} requires {language!r} text; available languages: {available}")
+    return texts[language]
 
 
 def load_raw(label: str, seed: int) -> pd.DataFrame:
@@ -404,8 +413,8 @@ def select_cases(family_df: pd.DataFrame, neighbourhood_df: pd.DataFrame, hierar
 
 def lexical_baselines(meta: CorpusMeta) -> pd.DataFrame:
     ids = sorted(meta.by_id)
-    en_texts = [meta.by_id[prop_id]["texts"]["en"] for prop_id in ids]
-    de_texts = [meta.by_id[prop_id]["texts"]["de"] for prop_id in ids]
+    en_texts = [require_language_text(meta.by_id[prop_id], "en") for prop_id in ids]
+    de_texts = [require_language_text(meta.by_id[prop_id], "de") for prop_id in ids]
     word = TfidfVectorizer(analyzer="word", lowercase=True)
     char = TfidfVectorizer(analyzer="char", ngram_range=(3, 5), lowercase=True)
     word_matrix = word.fit_transform(en_texts + de_texts)
@@ -487,8 +496,8 @@ def add_text_and_outputs(meta: CorpusMeta, manifest: pd.DataFrame, out_root: Pat
         selected_rows.append(
             {
                 "id": prop_id,
-                "german_text": row["texts"]["de"],
-                "english_text": row["texts"]["en"],
+                "german_text": require_language_text(row, "de"),
+                "english_text": require_language_text(row, "en"),
                 "parent_id": row["parent_id"],
                 "depth": row["depth"],
                 "successor_id": row["next_id"],
@@ -512,8 +521,8 @@ def add_text_and_outputs(meta: CorpusMeta, manifest: pd.DataFrame, out_root: Pat
                 "role": row.role,
                 "family_id": row.family_id,
                 "family_member_ids": json.dumps(children),
-                "family_member_english_texts": json.dumps({child: meta.by_id[child]["texts"]["en"] for child in children}, ensure_ascii=False),
-                "family_member_german_texts": json.dumps({child: meta.by_id[child]["texts"]["de"] for child in children}, ensure_ascii=False),
+                "family_member_english_texts": json.dumps({child: require_language_text(meta.by_id[child], "en") for child in children}, ensure_ascii=False),
+                "family_member_german_texts": json.dumps({child: require_language_text(meta.by_id[child], "de") for child in children}, ensure_ascii=False),
             }
         )
     with_text.to_csv(out_root / "candidate_manifest_with_text.csv", index=False)
@@ -666,9 +675,9 @@ def dossier_text(case_row: pd.Series, meta: CorpusMeta, raw_df: pd.DataFrame, ou
             [
                 f"### {prop_id}",
                 "",
-                f"German: {row['texts']['de']}",
+                f"German: {require_language_text(row, 'de')}",
                 "",
-                f"English: {row['texts']['en']}",
+                f"English: {require_language_text(row, 'en')}",
                 "",
                 f"Formal metadata: parent `{row['parent_id']}`, depth `{row['depth']}`, successor `{row['next_id']}`, child count `{row['child_count']}`.",
                 "",

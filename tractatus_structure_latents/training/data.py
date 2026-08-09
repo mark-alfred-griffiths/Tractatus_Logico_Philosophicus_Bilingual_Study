@@ -17,6 +17,14 @@ def tokenize(text: str) -> list[str]:
     return TOKEN_RE.findall(text.lower())
 
 
+def row_texts(row: dict) -> dict[str, str]:
+    if isinstance(row.get("texts"), dict):
+        return row["texts"]
+    if isinstance(row.get("text"), str):
+        return {"en": row["text"]}
+    return {}
+
+
 @dataclass
 class Vocabulary:
     token_to_id: dict[str, int]
@@ -75,11 +83,7 @@ class TractatusDataset(Dataset):
         self.vocab = vocab or Vocabulary.build([sample["text"] for sample in self.samples])
 
     def _row_texts(self, row: dict) -> dict[str, str]:
-        if "texts" in row:
-            return row["texts"]
-        if "text" in row:
-            return {"en": row["text"]}
-        return {}
+        return row_texts(row)
 
     def _resolve_languages(self, languages: list[str] | None) -> list[str]:
         if languages:

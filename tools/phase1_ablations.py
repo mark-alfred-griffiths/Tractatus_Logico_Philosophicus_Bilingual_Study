@@ -33,7 +33,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from tractatus_structure_latents.models.vae import HierarchicalRNNVAE, SplitLatentHierarchicalRNNVAE
-from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, tokenize
+from tractatus_structure_latents.training.data import TractatusDataset, Vocabulary, collate_batch, row_texts, tokenize
 
 DEFAULT_OUT = ROOT / "results" / "dsh_validation" / "phase1_ablations"
 DATA_PATH = ROOT / "tractatus_structure_latents" / "data" / "tractatus_bilingual.json"
@@ -365,8 +365,10 @@ def neighbourhood_jaccard(df: pd.DataFrame, z: np.ndarray, part: str, k_values: 
 def lexical_reference_metrics(dataset: TractatusDataset) -> dict[str, float]:
     rows = []
     for row in dataset.rows:
-        for language, text in row["texts"].items():
+        for language, text in row_texts(row).items():
             rows.append({"id": row["id"], "language": language, "text": text})
+    if len({row["language"] for row in rows}) < 2:
+        return {}
     ids = np.array([row["id"] for row in rows])
     languages = np.array([row["language"] for row in rows])
     texts = [row["text"] for row in rows]

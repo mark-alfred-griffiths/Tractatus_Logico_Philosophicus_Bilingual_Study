@@ -16,6 +16,7 @@ if str(ROOT) not in sys.path:
 
 from tools.canonical_experiments import PHASE3_LAMBDA_GRID, PHASE3_SEEDS, RESULTS, ROOT, canonical_phase3_ids
 from tools.export_canonical_evidence import export as dry_run_export
+from tractatus_structure_latents.training.data import row_texts
 
 
 NONCANONICAL_MARKERS = ("random_full_model", "paired_versus_random", "bilingual_alignment_lambda_sweep")
@@ -50,10 +51,11 @@ def verify(out_json: Path, out_md: Path) -> int:
 
     corpus = read_json(ROOT / "tractatus_structure_latents" / "data" / "tractatus_bilingual.json")
     ids = [str(row["id"]) for row in corpus]
+    text_counts = [len(row_texts(row)) for row in corpus]
     add(checks, "corpus proposition count", len(ids) == 526, str(len(ids)))
-    add(checks, "corpus row count", sum(len(row.get("texts", {})) for row in corpus) == 1052, str(sum(len(row.get("texts", {})) for row in corpus)))
+    add(checks, "corpus row count", sum(text_counts) == 1052, str(sum(text_counts)))
     add(checks, "no duplicate proposition IDs", len(ids) == len(set(ids)), str(len(ids) - len(set(ids))))
-    add(checks, "bilingual pairing completeness", all({"en", "de"} <= set(row.get("texts", {})) for row in corpus), "all rows have en/de text")
+    add(checks, "bilingual pairing completeness", all({"en", "de"} <= set(row_texts(row)) for row in corpus), "all rows have en/de text")
 
     phase1 = read_csv(RESULTS / "phase1_ablations" / "phase1_ablation_summary.csv")
     add(checks, "Phase 1 condition completeness", {row["condition"] for row in phase1} >= PHASE1_CONDITIONS, ",".join(sorted({row["condition"] for row in phase1})))

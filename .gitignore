@@ -31,14 +31,17 @@ results/dsh_validation/dsh_validation_bundle/
 results/dsh_validation/dsh_validation_bundle.zip
 
 results/dsh_validation/phase1_ablations/checkpoints/
+results/dsh_validation/phase1_ablations/phase1_per_proposition_results.parquet
 results/dsh_validation/phase1_ablations/raw/
 results/dsh_validation/phase1_ablations/smoke/
 
 results/dsh_validation/phase2_family_holdout/checkpoints/
+results/dsh_validation/phase2_family_holdout/phase2_per_proposition_results.parquet
 results/dsh_validation/phase2_family_holdout/raw/
 results/dsh_validation/phase2_family_holdout/smoke/
 
 results/dsh_validation/phase3_controlled_alignment/checkpoints/
+results/dsh_validation/phase3_controlled_alignment/phase3_epoch_trajectories.parquet
 results/dsh_validation/phase3_controlled_alignment/raw/
 results/dsh_validation/phase3_controlled_alignment/smoke/
 

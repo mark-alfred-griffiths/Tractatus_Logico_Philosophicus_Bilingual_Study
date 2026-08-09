@@ -9,6 +9,8 @@ from pathlib import Path
 
 from tools.canonical_experiments import canonical_phase3_ids
 from tools.export_canonical_evidence import export
+from tools.phase1_ablations import lexical_reference_metrics
+from tools.phase2_family_holdout import lexical_references, text_len
 from tractatus_structure_latents.training.data import TractatusDataset
 from tractatus_structure_latents.training.train_vae import PairedLanguageBatchSampler, set_seed
 
@@ -30,6 +32,48 @@ def summary_value(path: Path, condition: str, metric: str, field: str = "mean") 
 
 
 class CanonicalPipelineTests(unittest.TestCase):
+    def test_tractatus_dataset_loads_legacy_text_rows(self) -> None:
+        rows = [
+            {"id": "1", "parent_id": None, "next_id": "2", "depth": 0, "child_count": 1, "text": "The world is all that is the case."},
+            {"id": "2", "parent_id": "1", "next_id": None, "depth": 1, "child_count": 0, "text": "What is the case is the existence of atomic facts."},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "legacy.json"
+            path.write_text(json.dumps(rows), encoding="utf-8")
+            dataset = TractatusDataset(path)
+
+        self.assertEqual(dataset.languages, ["en"])
+        self.assertEqual(len(dataset), 2)
+        self.assertEqual(dataset.samples[0]["language"], "en")
+        self.assertEqual(dataset.samples[0]["text"], rows[0]["text"])
+
+    def test_tractatus_dataset_loads_multilingual_text_rows(self) -> None:
+        rows = [
+            {"id": "1", "parent_id": None, "next_id": None, "depth": 0, "child_count": 0, "texts": {"de": "Die Welt ist alles.", "en": "The world is everything."}},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "multilingual.json"
+            path.write_text(json.dumps(rows), encoding="utf-8")
+            dataset = TractatusDataset(path)
+
+        self.assertEqual(dataset.languages, ["de", "en"])
+        self.assertEqual(len(dataset), 2)
+        self.assertEqual([(sample["language"], sample["text"]) for sample in dataset.samples], [("de", "Die Welt ist alles."), ("en", "The world is everything.")])
+
+    def test_phase_lexical_helpers_accept_legacy_english_rows(self) -> None:
+        rows = [
+            {"id": "1", "parent_id": None, "next_id": "2", "depth": 0, "child_count": 1, "text": "The world is all that is the case."},
+            {"id": "2", "parent_id": "1", "next_id": None, "depth": 1, "child_count": 0, "text": "Atomic facts are independent of one another."},
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "legacy.json"
+            path.write_text(json.dumps(rows), encoding="utf-8")
+            dataset = TractatusDataset(path)
+
+        self.assertGreater(text_len(rows[0]), 0.0)
+        self.assertEqual(lexical_reference_metrics(dataset), {})
+        self.assertEqual(lexical_references(rows, {"1"}, {"2"}), {})
+
     def test_paired_sampler_coverage_and_language_integrity(self) -> None:
         rows = [
             {"id": "1", "parent_id": None, "next_id": "2", "depth": 0, "child_count": 1, "texts": {"de": "eins", "en": "one"}},
