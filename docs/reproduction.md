@@ -135,6 +135,11 @@ python3 tools/build_final_paper_manifest.py
 
 ## Dataset Rebuilds
 
+The checked-in JSON datasets are the canonical paper inputs. Dataset
+regeneration is provided for audit and maintenance, not required for normal
+paper reproduction. Regenerated data may differ if upstream source text,
+parsing dependencies, or environment details change.
+
 Dataset rebuilds are separate from the default paper wrapper:
 
 ```bash
@@ -148,6 +153,9 @@ python3 -m tractatus_structure_latents.scripts.build_dataset \
   --output tractatus_structure_latents/data/tractatus_bilingual.json \
   --languages en,de
 ```
+
+After regeneration, compare the changed files and run the canonical
+verification commands before treating the outputs as paper-equivalent.
 
 The full test sequence for dataset rebuilds and empirical reruns is maintained
 in [Full reproducibility test plan](full_reproducibility_test_plan.md).
