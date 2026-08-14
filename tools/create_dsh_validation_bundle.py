@@ -602,7 +602,7 @@ def verify_bundle() -> None:
 
 def main() -> None:
     branch = run_git(["branch", "--show-current"])
-    if branch not in {"main", "hold-out-and-ablation"}:
+    if branch != "main":
         raise SystemExit(f"refusing to create bundle on branch {branch!r}")
 
     commit_hash = run_git(["rev-parse", "HEAD"])
