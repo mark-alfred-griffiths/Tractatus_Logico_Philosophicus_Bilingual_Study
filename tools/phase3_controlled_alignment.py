@@ -126,6 +126,18 @@ def git_output(args: list[str]) -> str:
     return f"unavailable ({detail.splitlines()[0]})"
 
 
+def display_path_arg(value: object) -> str:
+    text = str(value)
+    try:
+        return str(Path(text).resolve().relative_to(ROOT))
+    except (OSError, ValueError):
+        return text
+
+
+def command_line(command: list[str]) -> str:
+    return " ".join(display_path_arg(part) for part in command)
+
+
 def ensure_layout(out_root: Path) -> None:
     for name in ["configs", "figures", "logs", "checkpoints", "metrics", "latents", "epoch_trajectories", "raw", "per_seed"]:
         (out_root / name).mkdir(parents=True, exist_ok=True)
@@ -298,7 +310,7 @@ def run_grid(
                     "beta_structure": args.beta_structure,
                     "lr": args.lr,
                     "device": args.device,
-                    "data": str(args.data),
+                    "data": display_path_arg(args.data),
                 },
             )
         for alignment_lambda in lambdas:
@@ -310,9 +322,9 @@ def run_grid(
                 epoch_metrics = out_root / "epoch_trajectories" / batching / condition.name / tag / f"seed{seed:03d}.csv"
                 log_path = out_root / "logs" / batching / condition.name / tag / f"seed{seed:03d}.train.log"
                 command = train_command(args, condition, alignment_lambda, checkpoint, epoch_metrics, batching, seed)
-                command_lines.append(" ".join(command))
+                command_lines.append(command_line(command))
                 command_lines.append(
-                    " ".join(
+                    command_line(
                         [
                             "python3",
                             "tools/phase3_controlled_alignment.py",
@@ -322,11 +334,11 @@ def run_grid(
                             "--seed",
                             str(seed),
                             "--checkpoint",
-                            str(checkpoint),
+                            display_path_arg(checkpoint),
                             "--data",
-                            str(args.data),
+                            display_path_arg(args.data),
                             "--out-root",
-                            str(out_root),
+                            display_path_arg(out_root),
                         ]
                     )
                 )

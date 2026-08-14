@@ -120,6 +120,18 @@ def git_output(args: list[str]) -> str:
     return f"unavailable ({detail.splitlines()[0]})"
 
 
+def display_path_arg(value: object) -> str:
+    text = str(value)
+    try:
+        return str(Path(text).resolve().relative_to(ROOT))
+    except (OSError, ValueError):
+        return text
+
+
+def command_line(command: list[str]) -> str:
+    return " ".join(display_path_arg(part) for part in command)
+
+
 def top_branch(prop_id: str) -> str:
     return prop_id.split(".", 1)[0]
 
@@ -944,7 +956,7 @@ def run(args: argparse.Namespace) -> None:
             "folds": folds,
             "seeds": seeds,
             "matched_resamples": args.matched_resamples,
-            "fold_manifest": str(manifest_path),
+            "fold_manifest": display_path_arg(manifest_path),
         },
     )
     for fold in folds:
@@ -956,9 +968,9 @@ def run(args: argparse.Namespace) -> None:
                 checkpoint = out_root / "checkpoints" / condition.name / f"fold{fold}_seed{seed:03d}.pt"
                 metric_path = out_root / "per_seed" / condition.name / f"fold{fold}_seed{seed:03d}.metrics.json"
                 command = train_command(args, condition, fold, seed, checkpoint, ids_file)
-                command_lines.append(" ".join(command))
+                command_lines.append(command_line(command))
                 command_lines.append(
-                    " ".join(
+                    command_line(
                         [
                             "python3",
                             "tools/phase2_family_holdout.py",
@@ -970,11 +982,11 @@ def run(args: argparse.Namespace) -> None:
                             "--seed",
                             str(seed),
                             "--checkpoint",
-                            str(checkpoint),
+                            display_path_arg(checkpoint),
                             "--data",
-                            str(args.data),
+                            display_path_arg(args.data),
                             "--out-root",
-                            str(out_root),
+                            display_path_arg(out_root),
                             "--matched-resamples",
                             str(args.matched_resamples),
                         ]

@@ -251,10 +251,15 @@ def build_dataset(
     languages: Sequence[str] = ("en",),
     allow_incomplete: bool = False,
 ) -> list[dict]:
+    languages = tuple(languages)
     propositions = parse_propositions(raw_text, languages=languages, allow_incomplete=allow_incomplete)
     if not propositions:
         raise ValueError("No propositions parsed from source text")
     enriched = enrich_propositions(propositions)
+    if languages == ("en",):
+        for row in enriched:
+            texts = row.pop("texts")
+            row["text"] = texts["en"]
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(enriched, indent=2, ensure_ascii=False), encoding="utf-8")

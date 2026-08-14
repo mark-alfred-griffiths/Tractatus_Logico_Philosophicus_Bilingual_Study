@@ -71,6 +71,14 @@ def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
+def display_path_arg(value: object) -> str:
+    text = str(value)
+    try:
+        return str(Path(text).resolve().relative_to(ROOT))
+    except (OSError, ValueError):
+        return text
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -402,7 +410,7 @@ def select_cases(family_df: pd.DataFrame, neighbourhood_df: pd.DataFrame, hierar
     write_json(
         out_root / "data" / "manifest_freeze.json",
         {
-            "candidate_manifest_pre_text": str(path),
+            "candidate_manifest_pre_text": display_path_arg(path),
             "sha256": digest,
             "frozen_utc": datetime.now(timezone.utc).isoformat(),
             "text_joined_utc": None,
@@ -528,9 +536,12 @@ def add_text_and_outputs(meta: CorpusMeta, manifest: pd.DataFrame, out_root: Pat
     with_text.to_csv(out_root / "candidate_manifest_with_text.csv", index=False)
     pd.DataFrame(family_rows).to_csv(out_root / "data" / "family_member_texts.csv", index=False)
     freeze = read_json(out_root / "data" / "manifest_freeze.json")
-    freeze["text_joined_utc"] = datetime.now(timezone.utc).isoformat()
-    freeze["candidate_manifest_with_text"] = str(out_root / "candidate_manifest_with_text.csv")
-    freeze["candidate_manifest_with_text_sha256"] = sha256_file(out_root / "candidate_manifest_with_text.csv")
+    text_manifest = out_root / "candidate_manifest_with_text.csv"
+    text_sha256 = sha256_file(text_manifest)
+    if freeze.get("candidate_manifest_with_text_sha256") != text_sha256 or not freeze.get("text_joined_utc"):
+        freeze["text_joined_utc"] = datetime.now(timezone.utc).isoformat()
+    freeze["candidate_manifest_with_text"] = display_path_arg(text_manifest)
+    freeze["candidate_manifest_with_text_sha256"] = text_sha256
     write_json(out_root / "data" / "manifest_freeze.json", freeze)
     return with_text
 

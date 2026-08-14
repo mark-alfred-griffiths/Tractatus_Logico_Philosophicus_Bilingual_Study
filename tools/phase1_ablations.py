@@ -131,8 +131,16 @@ def git_output(args: list[str]) -> str:
     return f"unavailable ({detail.splitlines()[0]})"
 
 
+def display_path_arg(value: object) -> str:
+    text = str(value)
+    try:
+        return str(Path(text).resolve().relative_to(ROOT))
+    except (OSError, ValueError):
+        return text
+
+
 def command_line(command: list[str]) -> str:
-    return " ".join(command)
+    return " ".join(display_path_arg(part) for part in command)
 
 
 def ensure_layout(out_root: Path) -> None:
@@ -143,7 +151,7 @@ def ensure_layout(out_root: Path) -> None:
 def condition_config(condition: Condition, args: argparse.Namespace) -> dict[str, Any]:
     return {
         "condition": condition.name,
-        "data": str(args.data),
+        "data": display_path_arg(args.data),
         "proposition_ids": 526,
         "languages": ["en", "de"],
         "split_latent": True,
@@ -886,7 +894,7 @@ def run(args: argparse.Namespace) -> None:
         "gpu_info": gpu_info(),
         "seeds": seeds,
         "conditions": {},
-        "outputs": str(out_root),
+        "outputs": display_path_arg(out_root),
     }
 
     for condition in selected:
@@ -910,11 +918,11 @@ def run(args: argparse.Namespace) -> None:
                         "--seed",
                         str(seed),
                         "--checkpoint",
-                        str(checkpoint),
+                        display_path_arg(checkpoint),
                         "--data",
-                        str(args.data),
+                        display_path_arg(args.data),
                         "--out-root",
-                        str(out_root),
+                        display_path_arg(out_root),
                     ]
                 )
             )
