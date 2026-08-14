@@ -31,6 +31,9 @@ the primary evidence layer. The current primary evidence lives under:
 results/dsh_validation/
 ```
 
+Validation figures are generated under `paper/figures/validation/` by the same
+paper-figure module and are listed in `paper/final_paper_manifest.csv`.
+
 ## Reproduction
 
 Use the safe non-training wrapper from the repository root:
@@ -50,6 +53,6 @@ Useful narrow checks:
 
 ```bash
 python3 tools/validate_final_paper_manifest.py
-python3 tools/validate_paper_figure_manifest.py
+python3 tools/validate_paper_figure_manifest.py --require-validation
 python3 -m unittest tests/test_paper_tables.py
 ```

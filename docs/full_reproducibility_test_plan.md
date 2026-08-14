@@ -31,7 +31,7 @@ training models:
 ```bash
 python3 tools/reproduce_final_paper_outputs.py --dry-run
 python3 tools/validate_final_paper_manifest.py
-python3 tools/validate_paper_figure_manifest.py
+python3 tools/validate_paper_figure_manifest.py --require-validation
 python3 -m pytest
 ```
 
@@ -269,9 +269,14 @@ python3 tools/export_paper_tables.py
 python3 -m tractatus_structure_latents.evaluation.generate_paper_figures
 python3 tools/build_final_paper_manifest.py
 python3 tools/validate_final_paper_manifest.py
-python3 tools/validate_paper_figure_manifest.py
+python3 tools/validate_paper_figure_manifest.py --require-validation
 python3 -m pytest
 ```
+
+The paper-figure generator writes the main manuscript figure under
+`paper/figures/` and validation figures under `paper/figures/validation/`.
+The validation rasters are expected to carry 600-dpi metadata, and the vector
+PDF companions are tracked in `paper/final_paper_manifest.csv`.
 
 Expected result: all canonical verification and tests pass. Some numerical
 outputs may differ if dependency versions, hardware, random number behaviour, or

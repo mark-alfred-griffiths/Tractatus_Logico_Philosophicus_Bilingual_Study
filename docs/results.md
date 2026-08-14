@@ -62,6 +62,29 @@ paper/figures/family_case_distance_matrix.pdf
 paper/figures/family_case_distance_matrix_data.csv
 ```
 
+Publication-quality validation figures are generated under:
+
+```text
+paper/figures/validation/
+```
+
+Expected validation artifacts are:
+
+```text
+paper/figures/validation/Figure_1_Retained_Ablation_Diagnostics_publication.pdf
+paper/figures/validation/Figure_1_Retained_Ablation_Diagnostics_publication.png
+paper/figures/validation/Figure_1_Retained_Ablation_Diagnostics_publication.tiff
+paper/figures/validation/Figure_2_Retained_vs_Holdout_Retrieval_publication.pdf
+paper/figures/validation/Figure_2_Retained_vs_Holdout_Retrieval_publication.png
+paper/figures/validation/Figure_2_Retained_vs_Holdout_Retrieval_publication.tiff
+paper/figures/validation/figure_1_plot_data.csv
+paper/figures/validation/figure_2_plot_data.csv
+```
+
+These validation artifacts are listed in `paper/final_paper_manifest.csv` with
+hashes and source provenance. The manuscript-use `figure_manifest.csv` remains
+restricted to figures used directly in the manuscript.
+
 Table-ready exports are:
 
 ```text

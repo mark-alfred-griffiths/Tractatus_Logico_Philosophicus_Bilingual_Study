@@ -123,6 +123,24 @@ def build_rows() -> list[dict[str, str]]:
             "Final Figure 1 artifact.",
         )
 
+    validation_dir = ROOT / "paper" / "figures" / "validation"
+    for path in sorted(validation_dir.glob("*")):
+        if not path.is_file():
+            continue
+        artifact_type = "validation_figure_source_data" if path.suffix.lower() == ".csv" else "validation_figure"
+        add(
+            rows,
+            path,
+            artifact_type,
+            "derived_paper_output",
+            "candidate",
+            "results/dsh_validation/phase1_ablations/; results/dsh_validation/phase2_family_holdout/; results/dsh_validation/canonical_reports/retained_lexical_references.csv",
+            "tractatus_structure_latents.evaluation.generate_paper_figures",
+            "python3 -m tractatus_structure_latents.evaluation.generate_paper_figures --skip-family-distance",
+            "python3 tools/validate_paper_figure_manifest.py --require-validation",
+            "Publication-quality validation figure artifact.",
+        )
+
     for path in sorted((ROOT / "paper" / "tables").glob("*.csv")):
         if not path.is_file():
             continue

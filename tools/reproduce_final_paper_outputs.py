@@ -89,7 +89,12 @@ def build_steps(include_bundle: bool) -> list[Step]:
         Step("Verify canonical evidence", ("python3", "tools/verify_canonical_evidence.py"), env),
         Step("Export paper tables", ("python3", "tools/export_paper_tables.py"), env),
         Step("Validate paper tables", ("python3", "-m", "unittest", "tests/test_paper_tables.py"), env),
-        Step("Validate paper figure manifest and 600dpi used PNGs", ("python3", "tools/validate_paper_figure_manifest.py"), env),
+        Step(
+            "Generate validation figures",
+            ("python3", "-m", "tractatus_structure_latents.evaluation.generate_paper_figures", "--skip-family-distance"),
+            env,
+        ),
+        Step("Validate paper figures", ("python3", "tools/validate_paper_figure_manifest.py", "--require-validation"), env),
         Step("Build final-paper manifest", ("python3", "tools/build_final_paper_manifest.py"), env),
         Step("Validate final-paper manifest", ("python3", "tools/validate_final_paper_manifest.py"), env),
     ]

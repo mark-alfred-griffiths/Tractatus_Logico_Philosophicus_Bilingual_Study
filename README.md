@@ -32,6 +32,11 @@ results/dsh_validation/phase4_case_studies/
 results/dsh_validation/canonical_reports/
 ```
 
+Paper-facing figures include the main manuscript figure under `paper/figures/`
+and validation figures under `paper/figures/validation/`. The validation
+figures are regenerated from retained empirical outputs by the safe
+reproduction wrapper; the raster exports are written at 600 dpi.
+
 GitHub is kept as the clean code plus small-evidence repository. Heavy retained
 artifacts such as checkpoints, raw/per-proposition parquet outputs, smoke
 outputs, and generated validation-bundle copies are external release/archive
@@ -48,9 +53,9 @@ python3 tools/reproduce_final_paper_outputs.py --dry-run
 
 Review the printed command list, then run the wrapper without `--dry-run` if
 you want to regenerate the paper-facing derivatives from retained evidence. The
-wrapper verifies or rebuilds canonical reports, paper tables, figure manifests,
-and final-paper manifests. It does not retrain models or restore external
-checkpoint/raw artifacts.
+wrapper verifies or rebuilds canonical reports, paper tables, validation
+figures, figure manifests, and final-paper manifests. It does not retrain models
+or restore external checkpoint/raw artifacts.
 
 For a staged clean-clone protocol that also covers external artifact
 restoration, dataset rebuilding, scratch smoke runs, and full empirical reruns,
