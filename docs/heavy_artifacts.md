@@ -9,13 +9,13 @@ Large empirical artifacts are kept outside Git and identified by SHA256 hashes.
 The current local archive prepared for release upload is:
 
 ```text
-/tmp/tractatus_heavy_artifacts_2026-08-09/tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
+/tmp/tractatus_release_refresh/tractatus-heavy-retained-artifacts-2026-08-14.zip
 ```
 
 Archive SHA256:
 
 ```text
-731891afbe1ebc300c5f3610838b943994745c51167b28917e0562a9fb4bf576
+f38ed4abddf438aa7e9c297244d3db88d35198eeba017c91cc46f646573a69c6
 ```
 
 The per-file manifest tracked in Git is:
@@ -44,13 +44,13 @@ too large or duplicative for the main Git history.
 Download the archive from the project release/archive record, then verify it:
 
 ```bash
-sha256sum tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
+sha256sum tractatus-heavy-retained-artifacts-2026-08-14.zip
 ```
 
 The hash must match the archive SHA256 above. Restore into a clean checkout:
 
 ```bash
-tar -xzf tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
+python3 -m zipfile -e tractatus-heavy-retained-artifacts-2026-08-14.zip .
 ```
 
 Then verify the restored files against the tracked manifest:
@@ -80,7 +80,7 @@ PY
 
 ## Upload Instructions
 
-Attach `tractatus-heavy-retained-artifacts-2026-08-09.tar.gz` to a GitHub
+Attach `tractatus-heavy-retained-artifacts-2026-08-14.zip` to a GitHub
 Release, Zenodo record, OSF project, or institutional archive. Publish the
 archive hash and keep the filename unchanged unless
 `docs/heavy_artifacts_manifest.csv` is regenerated.

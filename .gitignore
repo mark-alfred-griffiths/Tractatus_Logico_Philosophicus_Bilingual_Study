@@ -24,6 +24,8 @@ scratch/
 # External retained artifact archives
 tractatus-heavy-retained-artifacts-*.tar.gz
 tractatus-heavy-retained-artifacts-*.tar.gz.sha256
+tractatus-heavy-retained-artifacts-*.zip
+tractatus-heavy-retained-artifacts-*.zip.sha256
 SHA256SUMS*.txt
 
 # Restored heavy reproducibility artifacts

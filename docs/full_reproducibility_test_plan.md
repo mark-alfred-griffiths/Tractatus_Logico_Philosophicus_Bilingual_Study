@@ -72,27 +72,27 @@ Download the heavy archive from the GitHub Release or external archive record.
 The expected files are:
 
 ```text
-tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
-tractatus-heavy-retained-artifacts-2026-08-09.tar.gz.sha256
+tractatus-heavy-retained-artifacts-2026-08-14.zip
+tractatus-heavy-retained-artifacts-2026-08-14.zip.sha256
 ```
 
 Verify the archive hash:
 
 ```bash
-sha256sum tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
-cat tractatus-heavy-retained-artifacts-2026-08-09.tar.gz.sha256
+sha256sum tractatus-heavy-retained-artifacts-2026-08-14.zip
+cat tractatus-heavy-retained-artifacts-2026-08-14.zip.sha256
 ```
 
 Expected SHA256:
 
 ```text
-731891afbe1ebc300c5f3610838b943994745c51167b28917e0562a9fb4bf576
+f38ed4abddf438aa7e9c297244d3db88d35198eeba017c91cc46f646573a69c6
 ```
 
 Restore the archive into the repository root:
 
 ```bash
-tar -xzf tractatus-heavy-retained-artifacts-2026-08-09.tar.gz
+python3 -m zipfile -e tractatus-heavy-retained-artifacts-2026-08-14.zip .
 ```
 
 Validate restored heavy files against the tracked manifest:

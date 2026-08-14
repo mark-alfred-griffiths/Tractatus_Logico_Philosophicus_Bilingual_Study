@@ -6,6 +6,7 @@ import json
 import os
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, stdev
 
@@ -29,6 +30,12 @@ PURPLE = "#7b3294"
 GREEN = "#007f5f"
 GREY = "#6f6f6f"
 LIGHT_GREY = "#b7b7b7"
+PDF_METADATA = {
+    "Creator": "Tractatus Structure Latents",
+    "Producer": "Matplotlib",
+    "CreationDate": datetime(2026, 8, 14, tzinfo=timezone.utc),
+    "ModDate": datetime(2026, 8, 14, tzinfo=timezone.utc),
+}
 
 FIGURE1_CONDITIONS = [
     ("full_model", "Full model"),
@@ -310,7 +317,7 @@ def generate_family_distance_figure(source_data: Path, out_dir: Path) -> None:
             plt.text(j, i, f"{value:.2f}", ha="center", va="center", color=colour, fontsize=8)
     plt.tight_layout()
     plt.savefig(out_dir / "family_case_distance_matrix.png", dpi=600, bbox_inches="tight")
-    plt.savefig(out_dir / "family_case_distance_matrix.pdf", bbox_inches="tight")
+    plt.savefig(out_dir / "family_case_distance_matrix.pdf", bbox_inches="tight", metadata=PDF_METADATA)
     plt.close()
 
 
@@ -435,7 +442,7 @@ def apply_common_axis_style(ax: plt.Axes) -> None:
 def save_figure(fig: plt.Figure, out_dir: Path, stem: str) -> list[Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
     outputs = [out_dir / f"{stem}.pdf", out_dir / f"{stem}.png", out_dir / f"{stem}.tiff"]
-    fig.savefig(outputs[0], bbox_inches="tight")
+    fig.savefig(outputs[0], bbox_inches="tight", metadata=PDF_METADATA)
     fig.savefig(outputs[1], dpi=600, bbox_inches="tight")
     fig.savefig(outputs[2], dpi=600, bbox_inches="tight")
     plt.close(fig)
